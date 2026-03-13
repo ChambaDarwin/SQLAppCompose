@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SQL desde cero</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="./style/style_index.css">
+</head>
+<body>
+
+<nav>
+  <div class="logo">SQL<span>.curso</span></div>
+</nav>
+
+<main>
+  <div class="home-header">
+    <h1>SQL desde cero</h1>
+    <p>10 niveles para aprender SQL paso a paso. Selecciona un nivel para comenzar.</p>
+  </div>
+  <div class="cards-grid" id="cardsGrid"></div>
+</main>
+
+<footer>
+  <div>Desarrollado por <strong>Darwin Chamba</strong> · Desarrollador Fullstack</div>
+  <div>SQL desde cero · 10 niveles</div>
+</footer>
+
+<script>
+const levels = [
+  {
+    num: "01", title: "Introducción", command: "Conceptos base",
+    desc: "SQL es el lenguaje estándar para gestionar bases de datos relacionales. Todo parte de aquí.",
+    code: `-- Una base de datos tiene tablas\n-- Una tabla tiene filas y columnas\nSELECT 'Hola, SQL!';`,
+    page: null
+  },
+  {
+    num: "02", title: "SELECT", command: "Consultar datos",
+    desc: "Recupera datos de una tabla. Puedes traer todas las columnas o solo las que necesitas.",
+    code: `SELECT nombre, edad\nFROM usuarios\nWHERE edad > 18;`,
+    page: "./topic/select.html"
+  },
+  {
+    num: "03", title: "INSERT", command: "Insertar datos",
+    desc: "Agrega nuevas filas a una tabla especificando columnas y valores correspondientes.",
+    code: `INSERT INTO usuarios (nombre, edad)\nVALUES ('Ana', 25);`,
+    page: "./topic/insert.html"
+  },
+  {
+    num: "04", title: "UPDATE", command: "Actualizar datos",
+    desc: "Modifica registros existentes. Siempre usa WHERE para no cambiar toda la tabla.",
+    code: `UPDATE usuarios\nSET edad = 26\nWHERE nombre = 'Ana';`,
+    page: null
+  },
+  {
+    num: "05", title: "DELETE", command: "Eliminar datos",
+    desc: "Elimina filas de una tabla. Sin WHERE borra todos los registros permanentemente.",
+    code: `DELETE FROM usuarios\nWHERE nombre = 'Ana';`,
+    page: null
+  },
+  {
+    num: "06", title: "ORDER BY", command: "Ordenar resultados",
+    desc: "Ordena los resultados de una consulta de forma ascendente o descendente.",
+    code: `SELECT nombre, edad\nFROM usuarios\nORDER BY edad DESC;`,
+    page: null
+  },
+  {
+    num: "07", title: "Funciones", command: "Funciones de agregado",
+    desc: "COUNT, SUM, AVG, MAX y MIN calculan resultados sobre un conjunto de filas.",
+    code: `SELECT COUNT(*), AVG(edad)\nFROM usuarios;`,
+    page: null
+  },
+  {
+    num: "08", title: "GROUP BY", command: "Agrupar resultados",
+    desc: "Agrupa filas con el mismo valor y aplica funciones de agregado por cada grupo.",
+    code: `SELECT ciudad, COUNT(*)\nFROM usuarios\nGROUP BY ciudad;`,
+    page: null
+  },
+  {
+    num: "09", title: "JOIN", command: "Combinar tablas",
+    desc: "Une filas de dos o más tablas usando una columna relacionada entre ellas.",
+    code: `SELECT u.nombre, p.producto\nFROM usuarios u\nINNER JOIN pedidos p\n  ON u.id = p.usuario_id;`,
+    page: null
+  },
+  {
+    num: "10", title: "Subconsultas", command: "Consultas anidadas",
+    desc: "Un SELECT dentro de otro SELECT para filtrar o calcular valores dinámicamente.",
+    code: `SELECT nombre FROM usuarios\nWHERE edad = (\n  SELECT MAX(edad)\n  FROM usuarios\n);`,
+    page: null
+  }
+];
+
+const grid = document.getElementById('cardsGrid');
+
+levels.forEach((lvl) => {
+  const card = document.createElement('div');
+  card.className = 'card';
+
+  const btnHTML = lvl.page
+    ? `<a class="card-btn" href="${lvl.page}">Ver nivel ${lvl.num} →</a>`
+    : `<div class="card-btn-disabled">Próximamente</div>`;
+
+  card.innerHTML = `
+    <div class="card-level">Nivel ${lvl.num} · ${lvl.command}</div>
+    <div class="card-title">${lvl.title}</div>
+    <div class="card-desc">${lvl.desc}</div>
+    <div class="card-code">${lvl.code}</div>
+    ${btnHTML}
+  `;
+  grid.appendChild(card);
+});
+</script>
+</body>
+</html>
