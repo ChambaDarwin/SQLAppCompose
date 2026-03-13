@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>UPDATE en MySQL — Guía completa</title>
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;0,700;1,400&family=DM+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../style/style.update.css">
+</head>
+<body>
+
+<nav>
+  <div class="nav-logo">mysql &gt; UPDATE</div>
+  <a class="nav-back" href="index.html">← Volver al índice</a>
+</nav>
+
+<div class="page">
+
+  <!-- SIDEBAR -->
+  <aside>
+    <div class="aside-title">En esta guía</div>
+    <ul class="aside-links">
+      <li><a href="#intro">¿Qué es UPDATE?</a></li>
+      <li><a href="#tabla">La tabla ejemplo</a></li>
+      <li><a href="#sintaxis">Sintaxis básica</a></li>
+      <li><a href="#varias-col">Varias columnas</a></li>
+      <li><a href="#sin-where">El peligro sin WHERE</a></li>
+      <li><a href="#operadores">Operadores en SET</a></li>
+      <li><a href="#multiples">Múltiples filas</a></li>
+      <li><a href="#seguro">Proceso seguro</a></li>
+      <li><a href="#errores">Errores comunes</a></li>
+      <li><a href="#resumen">Resumen</a></li>
+    </ul>
+  </aside>
+
+  <!-- CONTENT -->
+  <article>
+
+    <!-- HERO -->
+    <div class="hero">
+      <div class="hero-tag">MySQL · Nivel básico</div>
+      <h1>Dominando el <em>UPDATE</em><br>en MySQL</h1>
+      <p class="hero-lead">Los datos cambian constantemente: precios, direcciones, estados. UPDATE es el comando que mantiene tu base de datos al día sin borrar ni recrear registros.</p>
+    </div>
+
+    <!-- ¿QUÉ ES? -->
+    <span class="section-anchor" id="intro"></span>
+    <div class="section">
+      <h2>¿Qué es UPDATE?</h2>
+      <p>UPDATE modifica los valores de filas que ya existen en una tabla. A diferencia de INSERT (que crea filas nuevas) y DELETE (que las elimina), UPDATE simplemente cambia el contenido de columnas específicas.</p>
+
+      <div class="box box-amber">
+        <div class="box-icon">✏️</div>
+        <div class="box-body">
+          <strong>Analogía del lápiz corrector</strong>
+          Imagina una libreta con los datos de tus clientes escritos a lápiz. UPDATE es el borrador y el lápiz: tachás lo que estaba mal y escribís el valor nuevo en el mismo renglón. El renglón sigue siendo el mismo, solo cambia su contenido.
+        </div>
+      </div>
+
+      <p>Cada vez que un usuario cambia su contraseña, actualiza su dirección o un producto cambia de precio, hay un UPDATE trabajando detrás de escena.</p>
+    </div>
+
+    <!-- TABLA -->
+    <span class="section-anchor" id="tabla"></span>
+    <div class="section">
+      <h2>La tabla que usaremos</h2>
+      <p>Trabajaremos con una tabla llamada <code style="font-family:var(--mono);font-size:0.83em;background:#f5f2ed;padding:2px 6px;border-radius:4px">empleados</code> con estos datos iniciales:</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>id</th><th>nombre</th><th>ciudad</th><th>departamento</th><th>salario</th><th>activo</th></tr></thead>
+          <tbody>
+            <tr><td>1</td><td>Ana Torres</td><td>Quito</td><td>Ingeniería</td><td>2800</td><td>1</td></tr>
+            <tr><td>2</td><td>Luis Mora</td><td>Guayaquil</td><td>Ventas</td><td>1900</td><td>1</td></tr>
+            <tr><td>3</td><td>Carmen Ríos</td><td>Quito</td><td>Ingeniería</td><td>3200</td><td>1</td></tr>
+            <tr><td>4</td><td>Pedro Vega</td><td>Cuenca</td><td>RRHH</td><td>1600</td><td>0</td></tr>
+            <tr><td>5</td><td>Sofía León</td><td>Guayaquil</td><td>Ventas</td><td>2100</td><td>1</td></tr>
+            <tr><td>6</td><td>Marco Díaz</td><td>Quito</td><td>RRHH</td><td>1750</td><td>1</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- SINTAXIS -->
+    <span class="section-anchor" id="sintaxis"></span>
+    <div class="section">
+      <h2>Sintaxis básica</h2>
+      <p>La estructura de UPDATE siempre sigue el mismo patrón: dices qué tabla, qué cambias, y con qué condición.</p>
+
+      <div class="anatomy">
+        <div class="anatomy-row">
+          <div class="anatomy-kw">UPDATE</div>
+          <div class="anatomy-desc"><strong>¿Qué tabla modificas?</strong> El nombre de la tabla con los registros a cambiar.</div>
+        </div>
+        <div class="anatomy-row">
+          <div class="anatomy-kw">SET</div>
+          <div class="anatomy-desc"><strong>¿Qué columnas cambias y a qué valor?</strong> Columna = nuevo valor, separadas por comas si son varias.</div>
+        </div>
+        <div class="anatomy-row">
+          <div class="anatomy-kw">WHERE</div>
+          <div class="anatomy-desc"><strong>¿Qué filas se ven afectadas?</strong> La condición que deben cumplir las filas a actualizar. <strong>¡Nunca lo omitas!</strong></div>
+        </div>
+      </div>
+
+      <div class="code-block">
+        <div class="code-header"><span class="code-label">Subir el salario de Ana Torres</span></div>
+        <div class="code-body"><span class="kw">UPDATE</span> empleados
+<span class="kw">SET</span> salario = <span class="num">3100</span>
+<span class="kw">WHERE</span> id = <span class="num">1</span>;</div>
+      </div>
+
+      <div class="result-label">Antes → Después</div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>id</th><th>nombre</th><th>salario antes</th><th>salario después</th></tr></thead>
+          <tbody>
+            <tr><td>1</td><td>Ana Torres</td><td class="old">2800</td><td class="new">3100</td></tr>
+            <tr><td>2</td><td>Luis Mora</td><td>1900</td><td>1900</td></tr>
+            <tr><td>3</td><td>Carmen Ríos</td><td>3200</td><td>3200</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="box box-green">
+        <div class="box-icon">💡</div>
+        <div class="box-body">
+          <strong>Usa siempre el id en WHERE</strong>
+          El <code style="font-family:var(--mono);font-size:0.85em">id</code> es único por fila. Usarlo en WHERE garantiza que solo se modifica exactamente el registro que querés, sin riesgo de afectar otros con el mismo nombre.
+        </div>
+      </div>
+    </div>
+
+    <!-- VARIAS COLUMNAS -->
+    <span class="section-anchor" id="varias-col"></span>
+    <div class="section">
+      <h2>Actualizar varias columnas a la vez</h2>
+      <p>Con SET podés cambiar varias columnas en una sola sentencia separándolas con comas. Es más eficiente que ejecutar un UPDATE por cada columna.</p>
+
+      <div class="box box-amber">
+        <div class="box-icon">🏠</div>
+        <div class="box-body">
+          <strong>Analogía del formulario de actualización</strong>
+          Cuando actualizás tus datos en un banco — nueva dirección, nuevo teléfono, nuevo email — lo hacés en un solo formulario, no en tres visitas distintas. UPDATE con múltiples columnas en SET funciona igual.
+        </div>
+      </div>
+
+      <div class="code-block">
+        <div class="code-header"><span class="code-label">Pedro cambia de ciudad y departamento</span></div>
+        <div class="code-body"><span class="kw">UPDATE</span> empleados
+<span class="kw">SET</span>
+  ciudad       = <span class="str">'Quito'</span>,
+  departamento = <span class="str">'Ventas'</span>,
+  salario      = <span class="num">1850</span>
+<span class="kw">WHERE</span> id = <span class="num">4</span>;</div>
+      </div>
+
+      <div class="result-label">Fila de Pedro antes → después</div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>id</th><th>nombre</th><th>ciudad</th><th>departamento</th><th>salario</th></tr></thead>
+          <tbody>
+            <tr>
+              <td>4</td><td>Pedro Vega</td>
+              <td class="old">Cuenca</td>
+              <td class="old">RRHH</td>
+              <td class="old">1600</td>
+            </tr>
+            <tr>
+              <td>4</td><td>Pedro Vega</td>
+              <td class="new">Quito</td>
+              <td class="new">Ventas</td>
+              <td class="new">1850</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <hr>
+
+    <!-- SIN WHERE -->
+    <span class="section-anchor" id="sin-where"></span>
+    <div class="section">
+      <h2>El peligro de olvidar WHERE</h2>
+      <p>Este es el error más costoso en SQL. Sin WHERE, el UPDATE afecta <strong>absolutamente todas las filas</strong> de la tabla.</p>
+
+      <div class="compare">
+        <div class="compare-box">
+          <div class="compare-header bad">✗ Sin WHERE — catastrófico</div>
+          <div class="code-body"><span class="kw">UPDATE</span> empleados
+<span class="kw">SET</span> salario = <span class="num">999</span>;
+
+<span class="cm">-- ¡Todos los salarios
+-- ahora son 999!</span></div>
+        </div>
+        <div class="compare-box">
+          <div class="compare-header good">✓ Con WHERE — seguro</div>
+          <div class="code-body"><span class="kw">UPDATE</span> empleados
+<span class="kw">SET</span> salario = <span class="num">999</span>
+<span class="kw">WHERE</span> id = <span class="num">2</span>;
+
+<span class="cm">-- Solo Luis Mora
+-- cambia a 999</span></div>
+        </div>
+      </div>
+
+      <div class="box box-red">
+        <div class="box-icon">⚠️</div>
+        <div class="box-body">
+          <strong>Regla de oro: nunca hagas UPDATE sin WHERE en producción</strong>
+          Un UPDATE sin WHERE en una tabla con miles de registros puede destruir datos en milisegundos. No hay "Ctrl+Z". Siempre verificá con un SELECT primero.
+        </div>
+      </div>
+
+      <div class="box box-amber">
+        <div class="box-icon">🔒</div>
+        <div class="box-body">
+          <strong>Analogía del freno de mano</strong>
+          El WHERE en un UPDATE es como el freno de mano de un auto estacionado en una pendiente. Podés olvidarlo una vez… pero las consecuencias son irreversibles. Hacelo un hábito automático.
+        </div>
+      </div>
+    </div>
+
+    <!-- OPERADORES EN SET -->
+    <span class="section-anchor" id="operadores"></span>
+    <div class="section">
+      <h2>Operadores matemáticos en SET</h2>
+      <p>No siempre sabés el valor nuevo exacto. Podés usar el valor actual de la columna como base para calcular el nuevo valor.</p>
+
+      <div class="code-block">
+        <div class="code-header"><span class="code-label">Aumentar el salario de Ingeniería un 10%</span></div>
+        <div class="code-body"><span class="kw">UPDATE</span> empleados
+<span class="kw">SET</span> salario = salario * <span class="num">1.10</span>
+<span class="kw">WHERE</span> departamento = <span class="str">'Ingeniería'</span>;</div>
+      </div>
+
+      <div class="result-label">Resultado →</div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>nombre</th><th>salario antes</th><th>salario después</th></tr></thead>
+          <tbody>
+            <tr><td>Ana Torres</td><td class="old">3100</td><td class="new">3410</td></tr>
+            <tr><td>Carmen Ríos</td><td class="old">3200</td><td class="new">3520</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="table-wrap" style="margin-top:1.5rem">
+        <table>
+          <thead><tr><th>Operación</th><th>Ejemplo en SET</th><th>Efecto</th></tr></thead>
+          <tbody>
+            <tr><td>Sumar</td><td><span class="tag">salario = salario + 200</span></td><td>Agrega 200 al valor actual</td></tr>
+            <tr><td>Restar</td><td><span class="tag">stock = stock - 1</span></td><td>Descuenta 1 del stock</td></tr>
+            <tr><td>Multiplicar</td><td><span class="tag">precio = precio * 1.10</span></td><td>Sube el precio 10%</td></tr>
+            <tr><td>Concatenar</td><td><span class="tag">nombre = CONCAT(nombre, ' Jr.')</span></td><td>Agrega texto al nombre</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="code-block">
+        <div class="code-header"><span class="code-label">Descontar 1 unidad del stock al vender</span></div>
+        <div class="code-body"><span class="kw">UPDATE</span> productos
+<span class="kw">SET</span> stock = stock - <span class="num">1</span>
+<span class="kw">WHERE</span> id = <span class="num">5</span> <span class="kw">AND</span> stock > <span class="num">0</span>;
+
+<span class="cm">-- El AND stock > 0 evita stock negativo</span></div>
+      </div>
+    </div>
+
+    <!-- MÚLTIPLES FILAS -->
+    <span class="section-anchor" id="multiples"></span>
+    <div class="section">
+      <h2>Actualizar múltiples filas a la vez</h2>
+      <p>WHERE no solo puede apuntar a una fila. Podés actualizar todas las filas que cumplan una condición con un solo UPDATE.</p>
+
+      <div class="box box-amber">
+        <div class="box-icon">📢</div>
+        <div class="box-body">
+          <strong>Analogía del anuncio masivo</strong>
+          Es como mandar un correo a todos los empleados del departamento de Ventas con un nuevo código de acceso. No vas uno por uno: mandás una sola comunicación que llega a todos los que cumplen el criterio.
+        </div>
+      </div>
+
+      <div class="code-block">
+        <div class="code-header"><span class="code-label">Desactivar todos los empleados de RRHH</span></div>
+        <div class="code-body"><span class="kw">UPDATE</span> empleados
+<span class="kw">SET</span> activo = <span class="num">0</span>
+<span class="kw">WHERE</span> departamento = <span class="str">'RRHH'</span>;</div>
+      </div>
+
+      <div class="result-label">Filas afectadas →</div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>id</th><th>nombre</th><th>departamento</th><th>activo antes</th><th>activo después</th></tr></thead>
+          <tbody>
+            <tr><td>4</td><td>Pedro Vega</td><td>RRHH</td><td class="old">0</td><td class="new">0</td></tr>
+            <tr><td>6</td><td>Marco Díaz</td><td>RRHH</td><td class="old">1</td><td class="new">0</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3 style="margin-top:1.5rem">Combinar condiciones con AND / OR</h3>
+
+      <div class="code-block">
+        <div class="code-header"><span class="code-label">Subir salario a empleados activos en Quito</span></div>
+        <div class="code-body"><span class="kw">UPDATE</span> empleados
+<span class="kw">SET</span> salario = salario + <span class="num">300</span>
+<span class="kw">WHERE</span> ciudad = <span class="str">'Quito'</span>
+  <span class="kw">AND</span> activo = <span class="num">1</span>;</div>
+      </div>
+
+      <div class="code-block">
+        <div class="code-header"><span class="code-label">Usar IN para múltiples valores</span></div>
+        <div class="code-body"><span class="kw">UPDATE</span> empleados
+<span class="kw">SET</span> departamento = <span class="str">'Comercial'</span>
+<span class="kw">WHERE</span> id <span class="kw">IN</span> (<span class="num">2</span>, <span class="num">5</span>);
+
+<span class="cm">-- Actualiza Luis Mora y Sofía León</span></div>
+      </div>
+    </div>
+
+    <hr>
+
+    <!-- PROCESO SEGURO -->
+    <span class="section-anchor" id="seguro"></span>
+    <div class="section">
+      <h2>El proceso seguro para hacer un UPDATE</h2>
+      <p>Antes de ejecutar cualquier UPDATE en una base de datos real, seguí siempre estos pasos:</p>
+
+      <div class="steps">
+        <div class="step">
+          <div class="step-num">1</div>
+          <div class="step-body">
+            <h4>Verificá con SELECT primero</h4>
+            <p>Ejecutá un SELECT con el mismo WHERE para ver exactamente qué filas se van a modificar.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">2</div>
+          <div class="step-body">
+            <h4>Revisá los resultados del SELECT</h4>
+            <p>Confirmá que las filas son las correctas. Si hay más o menos de lo esperado, revisá la condición.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">3</div>
+          <div class="step-body">
+            <h4>Ejecutá el UPDATE</h4>
+            <p>Solo cuando estés seguro de qué filas serán afectadas, ejecutá el UPDATE.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">4</div>
+          <div class="step-body">
+            <h4>Verificá el resultado</h4>
+            <p>Volvé a hacer un SELECT para confirmar que los datos cambiaron correctamente.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="code-block">
+        <div class="code-header"><span class="code-label">Flujo seguro completo</span></div>
+        <div class="code-body"><span class="cm">-- Paso 1: verificar qué filas se van a tocar</span>
+<span class="kw">SELECT</span> * <span class="kw">FROM</span> empleados
+<span class="kw">WHERE</span> departamento = <span class="str">'Ventas'</span>;
+
+<span class="cm">-- Paso 2: si el resultado es correcto, ejecutar</span>
+<span class="kw">UPDATE</span> empleados
+<span class="kw">SET</span> salario = salario + <span class="num">200</span>
+<span class="kw">WHERE</span> departamento = <span class="str">'Ventas'</span>;
+
+<span class="cm">-- Paso 3: confirmar el resultado</span>
+<span class="kw">SELECT</span> nombre, salario <span class="kw">FROM</span> empleados
+<span class="kw">WHERE</span> departamento = <span class="str">'Ventas'</span>;</div>
+      </div>
+
+      <div class="box box-blue">
+        <div class="box-icon">🛡️</div>
+        <div class="box-body">
+          <strong>Tip extra: usá transacciones en producción</strong>
+          Con <code style="font-family:var(--mono);font-size:0.85em">START TRANSACTION</code> podés ejecutar el UPDATE, verificar el resultado y decidir si hacés <code style="font-family:var(--mono);font-size:0.85em">COMMIT</code> (confirmar) o <code style="font-family:var(--mono);font-size:0.85em">ROLLBACK</code> (deshacer). Es el seguro de vida del UPDATE.
+        </div>
+      </div>
+
+      <div class="code-block">
+        <div class="code-header"><span class="code-label">UPDATE con transacción (máxima seguridad)</span></div>
+        <div class="code-body"><span class="kw">START TRANSACTION</span>;
+
+<span class="kw">UPDATE</span> empleados
+<span class="kw">SET</span> salario = salario + <span class="num">500</span>
+<span class="kw">WHERE</span> id = <span class="num">3</span>;
+
+<span class="cm">-- Verificar antes de confirmar</span>
+<span class="kw">SELECT</span> nombre, salario <span class="kw">FROM</span> empleados <span class="kw">WHERE</span> id = <span class="num">3</span>;
+
+<span class="cm">-- Si todo está bien:</span>
+<span class="kw">COMMIT</span>;
+
+<span class="cm">-- Si algo salió mal:</span>
+<span class="cm">-- ROLLBACK;</span></div>
+      </div>
+    </div>
+
+    <!-- ERRORES COMUNES -->
+    <span class="section-anchor" id="errores"></span>
+    <div class="section">
+      <h2>Errores comunes</h2>
+
+      <h3>1. WHERE con columna de texto en vez de id</h3>
+      <div class="compare">
+        <div class="compare-box">
+          <div class="compare-header bad">✗ Arriesgado</div>
+          <div class="code-body"><span class="kw">UPDATE</span> empleados
+<span class="kw">SET</span> salario = <span class="num">3000</span>
+<span class="kw">WHERE</span> nombre = <span class="str">'Ana'</span>;
+<span class="cm">-- ¿Hay más de un Ana?</span></div>
+        </div>
+        <div class="compare-box">
+          <div class="compare-header good">✓ Seguro</div>
+          <div class="code-body"><span class="kw">UPDATE</span> empleados
+<span class="kw">SET</span> salario = <span class="num">3000</span>
+<span class="kw">WHERE</span> id = <span class="num">1</span>;
+<span class="cm">-- id es único siempre</span></div>
+        </div>
+      </div>
+
+      <h3 style="margin-top:1.5rem">2. Actualizar con el tipo de dato equivocado</h3>
+      <div class="compare">
+        <div class="compare-box">
+          <div class="compare-header bad">✗ Error de tipo</div>
+          <div class="code-body"><span class="kw">UPDATE</span> empleados
+<span class="kw">SET</span> salario = <span class="str">'dos mil'</span>
+<span class="kw">WHERE</span> id = <span class="num">1</span>;
+<span class="cm">-- salario es numérico,
+-- no acepta texto</span></div>
+        </div>
+        <div class="compare-box">
+          <div class="compare-header good">✓ Tipo correcto</div>
+          <div class="code-body"><span class="kw">UPDATE</span> empleados
+<span class="kw">SET</span> salario = <span class="num">2000</span>
+<span class="kw">WHERE</span> id = <span class="num">1</span>;
+<span class="cm">-- número sin comillas ✓</span></div>
+        </div>
+      </div>
+
+      <h3 style="margin-top:1.5rem">3. Olvidar comas entre columnas en SET</h3>
+      <div class="compare">
+        <div class="compare-box">
+          <div class="compare-header bad">✗ Sin coma</div>
+          <div class="code-body"><span class="kw">UPDATE</span> empleados
+<span class="kw">SET</span>
+  ciudad = <span class="str">'Quito'</span>
+  salario = <span class="num">2000</span>
+<span class="kw">WHERE</span> id = <span class="num">1</span>;
+<span class="cm">-- Error de sintaxis</span></div>
+        </div>
+        <div class="compare-box">
+          <div class="compare-header good">✓ Con coma</div>
+          <div class="code-body"><span class="kw">UPDATE</span> empleados
+<span class="kw">SET</span>
+  ciudad = <span class="str">'Quito'</span>,
+  salario = <span class="num">2000</span>
+<span class="kw">WHERE</span> id = <span class="num">1</span>;
+<span class="cm">-- coma entre columnas ✓</span></div>
+        </div>
+      </div>
+    </div>
+
+    <hr>
+
+    <!-- RESUMEN -->
+    <span class="section-anchor" id="resumen"></span>
+    <div class="section">
+      <h2>Resumen: UPDATE completo</h2>
+
+      <div class="code-block">
+        <div class="code-header"><span class="code-label">Todo junto en un ejemplo real</span></div>
+        <div class="code-body"><span class="cm">-- 1. Verificar primero</span>
+<span class="kw">SELECT</span> nombre, salario, ciudad
+<span class="kw">FROM</span> empleados
+<span class="kw">WHERE</span> departamento = <span class="str">'Ingeniería'</span> <span class="kw">AND</span> activo = <span class="num">1</span>;
+
+<span class="cm">-- 2. Actualizar con seguridad</span>
+<span class="kw">UPDATE</span> empleados
+<span class="kw">SET</span>
+  salario = salario * <span class="num">1.15</span>,
+  ciudad  = <span class="str">'Quito'</span>
+<span class="kw">WHERE</span> departamento = <span class="str">'Ingeniería'</span>
+  <span class="kw">AND</span> activo = <span class="num">1</span>;
+
+<span class="cm">-- 3. Confirmar cambios</span>
+<span class="kw">SELECT</span> nombre, salario, ciudad
+<span class="kw">FROM</span> empleados
+<span class="kw">WHERE</span> departamento = <span class="str">'Ingeniería'</span>;</div>
+      </div>
+
+      <h3 style="margin-top:1.75rem">Lo que aprendiste</h3>
+      <ul class="checklist">
+        <li>UPDATE modifica filas existentes sin borrarlas ni crear nuevas</li>
+        <li>SET define qué columnas cambian y cuál es el nuevo valor</li>
+        <li>WHERE determina qué filas se afectan — siempre es obligatorio en producción</li>
+        <li>Podés actualizar varias columnas en un SET separándolas con comas</li>
+        <li>Podés usar el valor actual en SET: <code style="font-family:var(--mono);font-size:0.85em">salario = salario + 200</code></li>
+        <li>Sin WHERE el UPDATE afecta todas las filas de la tabla</li>
+        <li>Verificá siempre con SELECT antes de ejecutar el UPDATE</li>
+        <li>Usá START TRANSACTION / COMMIT / ROLLBACK para máxima seguridad</li>
+      </ul>
+    </div>
+
+  </article>
+</div>
+
+<footer>
+  <div>Guía de MySQL · <strong>UPDATE</strong></div>
+  <div>Desarrollado por <strong>Darwin Chamba</strong> · Desarrollador Fullstack</div>
+</footer>
+
+<script>
+  const links    = document.querySelectorAll('.aside-links a');
+  const anchors  = document.querySelectorAll('.section-anchor');
+  window.addEventListener('scroll', () => {
+    let current = '';
+    anchors.forEach(a => {
+      if (window.scrollY >= a.offsetTop - 70) current = a.id;
+    });
+    links.forEach(a => a.classList.toggle('active', a.getAttribute('href') === '#' + current));
+  }, { passive: true });
+</script>
+</body>
+</html>
