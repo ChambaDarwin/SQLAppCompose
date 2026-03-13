@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ORDER BY en MySQL — Guía completa</title>
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;0,700;1,400&family=DM+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../style/style_oderby.css">
+</head>
+<body>
+
+<nav>
+  <div class="nav-logo">mysql &gt; ORDER BY</div>
+  <a class="nav-back" href="index.html">← Volver al índice</a>
+</nav>
+
+<div class="page">
+
+  <aside>
+    <div class="aside-title">En esta guía</div>
+    <ul class="aside-links">
+      <li><a href="#intro">¿Qué es ORDER BY?</a></li>
+      <li><a href="#tabla">La tabla ejemplo</a></li>
+      <li><a href="#sintaxis">Sintaxis básica</a></li>
+      <li><a href="#asc-desc">ASC y DESC</a></li>
+      <li><a href="#multiples">Múltiples columnas</a></li>
+      <li><a href="#con-where">ORDER BY + WHERE</a></li>
+      <li><a href="#con-limit">ORDER BY + LIMIT</a></li>
+      <li><a href="#nulos">Ordenar con NULLs</a></li>
+      <li><a href="#tipos">Tipos de datos</a></li>
+      <li><a href="#errores">Errores comunes</a></li>
+      <li><a href="#resumen">Resumen</a></li>
+    </ul>
+  </aside>
+
+  <article>
+
+    <!-- HERO -->
+    <div class="hero">
+      <div class="hero-tag">MySQL · Nivel básico</div>
+      <h1>Dominando el <em>ORDER BY</em><br>en MySQL</h1>
+      <p class="hero-lead">Los datos en una base de datos no tienen un orden natural. ORDER BY es el comando que te permite presentarlos exactamente como los necesitas: de mayor a menor, alfabéticamente, por fecha, o como tú decidas.</p>
+    </div>
+
+    <!-- ¿QUÉ ES? -->
+    <span class="section-anchor" id="intro"></span>
+    <div class="section">
+      <h2>¿Qué es ORDER BY?</h2>
+      <p>ORDER BY es una cláusula del SELECT que ordena las filas del resultado de una consulta. Por sí solo, MySQL no garantiza ningún orden específico al devolver datos — ORDER BY es la única forma confiable de obtener resultados ordenados.</p>
+
+      <div class="box box-amber">
+        <div class="box-icon">📚</div>
+        <div class="box-body">
+          <strong>Analogía de la biblioteca</strong>
+          Imagina una biblioteca con miles de libros apilados sin orden. Si le pides al bibliotecario "dame todos los libros de ciencia", te los traerá… pero en cualquier orden. Si además le dices "ordénalos por año de publicación, del más nuevo al más viejo", ahí interviene ORDER BY: mismos datos, presentación organizada.
+        </div>
+      </div>
+
+      <p>ORDER BY solo afecta la <strong>presentación</strong> del resultado, nunca modifica los datos almacenados en la tabla.</p>
+    </div>
+
+    <!-- TABLA -->
+    <span class="section-anchor" id="tabla"></span>
+    <div class="section">
+      <h2>La tabla que usaremos</h2>
+      <p>Trabajaremos con la tabla <code style="font-family:var(--mono);font-size:0.83em;background:#f5f2ed;padding:2px 6px;border-radius:4px">empleados</code>:</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>id</th><th>nombre</th><th>ciudad</th><th>departamento</th><th>salario</th><th>activo</th></tr></thead>
+          <tbody>
+            <tr><td>1</td><td>Ana Torres</td><td>Quito</td><td>Ingeniería</td><td>3410</td><td>1</td></tr>
+            <tr><td>2</td><td>Luis Mora</td><td>Guayaquil</td><td>Ventas</td><td>1900</td><td>1</td></tr>
+            <tr><td>3</td><td>Carmen Ríos</td><td>Quito</td><td>Ingeniería</td><td>3520</td><td>1</td></tr>
+            <tr><td>4</td><td>Pedro Vega</td><td>Cuenca</td><td>RRHH</td><td>1850</td><td>0</td></tr>
+            <tr><td>5</td><td>Sofía León</td><td>Guayaquil</td><td>Ventas</td><td>2100</td><td>1</td></tr>
+            <tr><td>6</td><td>Marco Díaz</td><td>Quito</td><td>RRHH</td><td>1750</td><td>1</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- SINTAXIS -->
+    <span class="section-anchor" id="sintaxis"></span>
+    <div class="section">
+      <h2>Sintaxis básica</h2>
+      <p>ORDER BY siempre va al final de la consulta, después del WHERE si lo hay.</p>
+
+      <div class="anatomy">
+        <div class="anatomy-row">
+          <div class="anatomy-kw">SELECT</div>
+          <div class="anatomy-desc"><strong>¿Qué columnas mostrar?</strong></div>
+        </div>
+        <div class="anatomy-row">
+          <div class="anatomy-kw">FROM</div>
+          <div class="anatomy-desc"><strong>¿De qué tabla?</strong></div>
+        </div>
+        <div class="anatomy-row">
+          <div class="anatomy-kw">WHERE</div>
+          <div class="anatomy-desc"><strong>Condición de filtro</strong> (opcional)</div>
+        </div>
+        <div class="anatomy-row">
+          <div class="anatomy-kw">ORDER BY</div>
+          <div class="anatomy-desc"><strong>¿Por qué columna ordenar?</strong> Va siempre al final.</div>
+        </div>
+        <div class="anatomy-row">
+          <div class="anatomy-kw">ASC / DESC</div>
+          <div class="anatomy-desc"><strong>¿En qué dirección?</strong> ASC = de menor a mayor (por defecto). DESC = de mayor a menor.</div>
+        </div>
+      </div>
+
+      <div class="code-block">
+        <div class="code-header"><span class="code-label">Ordenar empleados por nombre (A → Z)</span></div>
+        <div class="code-body"><span class="kw">SELECT</span> nombre, salario
+<span class="kw">FROM</span> empleados
+<span class="kw">ORDER BY</span> nombre <span class="kw">ASC</span>;</div>
+      </div>
+
+      <div class="result-label">Resultado →</div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>#</th><th>nombre</th><th>salario</th></tr></thead>
+          <tbody>
+            <tr><td class="pos">1</td><td class="hi1">Ana Torres</td><td>3410</td></tr>
+            <tr><td class="pos">2</td><td class="hi2">Carmen Ríos</td><td>3520</td></tr>
+            <tr><td class="pos">3</td><td class="hi2">Luis Mora</td><td>1900</td></tr>
+            <tr><td class="pos">4</td><td class="hi3">Marco Díaz</td><td>1750</td></tr>
+            <tr><td class="pos">5</td><td class="hi3">Pedro Vega</td><td>1850</td></tr>
+            <tr><td class="pos">6</td><td>Sofía León</td><td>2100</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ASC Y DESC -->
+    <span class="section-anchor" id="asc-desc"></span>
+    <div class="section">
+      <h2>ASC y DESC</h2>
+      <p>Son los dos modificadores de dirección. ASC (ascendente) es el valor por defecto, así que podés omitirlo. DESC (descendente) invierte el orden.</p>
+
+      <div class="compare">
+        <div class="compare-box">
+          <div class="compare-header asc">↑ ASC — de menor a mayor</div>
+          <div class="code-body"><span class="kw">SELECT</span> nombre, salario
+<span class="kw">FROM</span> empleados
+<span class="kw">ORDER BY</span> salario <span class="kw">ASC</span>;</div>
+        </div>
+        <div class="compare-box">
+          <div class="compare-header desc">↓ DESC — de mayor a menor</div>
+          <div class="code-body"><span class="kw">SELECT</span> nombre, salario
+<span class="kw">FROM</span> empleados
+<span class="kw">ORDER BY</span> salario <span class="kw">DESC</span>;</div>
+        </div>
+      </div>
+
+      <div class="compare">
+        <div class="compare-box">
+          <div class="compare-header asc">Resultado ASC →</div>
+          <div class="code-body">Marco Díaz    — 1750
+Pedro Vega    — 1850
+Luis Mora     — 1900
+Sofía León    — 2100
+Ana Torres    — 3410
+Carmen Ríos   — 3520</div>
+        </div>
+        <div class="compare-box">
+          <div class="compare-header desc">Resultado DESC →</div>
+          <div class="code-body">Carmen Ríos   — 3520
+Ana Torres    — 3410
+Sofía León    — 2100
+Luis Mora     — 1900
+Pedro Vega    — 1850
+Marco Díaz    — 1750</div>
+        </div>
+      </div>
+
+      <div class="box box-green">
+        <div class="box-icon">💡</div>
+        <div class="box-body">
+          <strong>ASC es el valor por defecto</strong>
+          Si escribís <code style="font-family:var(--mono);font-size:0.85em">ORDER BY salario</code> sin especificar ASC o DESC, MySQL lo ordena de menor a mayor automáticamente.
+        </div>
+      </div>
+
+      <div class="box box-amber">
+        <div class="box-icon">🎵</div>
+        <div class="box-body">
+          <strong>Analogía de la lista de reproducción</strong>
+          ASC es como ordenar tus canciones por duración de la más corta a la más larga. DESC es al revés: primero las más largas. La lista de canciones (los datos) no cambia, solo el orden en que aparecen.
+        </div>
+      </div>
+    </div>
+
+    <hr>
+
+    <!-- MÚLTIPLES COLUMNAS -->
+    <span class="section-anchor" id="multiples"></span>
+    <div class="section">
+      <h2>Ordenar por múltiples columnas</h2>
+      <p>Podés indicar varias columnas en ORDER BY separadas por comas. La segunda columna actúa como desempate cuando hay valores iguales en la primera.</p>
+
+      <div class="box box-amber">
+        <div class="box-icon">🏆</div>
+        <div class="box-body">
+          <strong>Analogía del ranking de estudiantes</strong>
+          En un concurso, primero ordenás a los estudiantes por nota. Si dos tienen la misma nota, los desempatás por apellido alfabéticamente. Eso es exactamente lo que hace ORDER BY con múltiples columnas.
+        </div>
+      </div>
+
+      <div class="code-block">
+        <div class="code-header"><span class="code-label">Ordenar por departamento y luego por salario</span></div>
+        <div class="code-body"><span class="kw">SELECT</span> nombre, departamento, salario
+<span class="kw">FROM</span> empleados
+<span class="kw">ORDER BY</span> departamento <span class="kw">ASC</span>, salario <span class="kw">DESC</span>;</div>
+      </div>
+
+      <div class="result-label">Resultado → primero agrupa por departamento (A→Z), luego ordena salario de mayor a menor dentro de cada grupo</div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>nombre</th><th>departamento</th><th>salario</th></tr></thead>
+          <tbody>
+            <tr><td>Carmen Ríos</td><td class="hi">Ingeniería</td><td>3520</td></tr>
+            <tr><td>Ana Torres</td><td class="hi">Ingeniería</td><td>3410</td></tr>
+            <tr><td>Marco Díaz</td><td class="hi1">RRHH</td><td>1750</td></tr>
+            <tr><td>Pedro Vega</td><td class="hi1">RRHH</td><td>1850</td></tr>
+            <tr><td>Sofía León</td><td class="hi2">Ventas</td><td>2100</td></tr>
+            <tr><td>Luis Mora</td><td class="hi2">Ventas</td><td>1900</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="code-block">
+        <div class="code-header"><span class="code-label">Cada columna puede tener su propia dirección</span></div>
+        <div class="code-body"><span class="cm">-- Ciudad A→Z, y dentro de cada ciudad
+-- salario de mayor a menor</span>
+<span class="kw">SELECT</span> nombre, ciudad, salario
+<span class="kw">FROM</span> empleados
+<span class="kw">ORDER BY</span> ciudad <span class="kw">ASC</span>, salario <span class="kw">DESC</span>;</div>
+      </div>
+    </div>
+
+    <!-- ORDER BY + WHERE -->
+    <span class="section-anchor" id="con-where"></span>
+    <div class="section">
+      <h2>ORDER BY junto con WHERE</h2>
+      <p>WHERE filtra primero qué filas incluir, y ORDER BY ordena después esas filas filtradas. El orden importa: WHERE siempre va antes de ORDER BY.</p>
+
+      <div class="code-block">
+        <div class="code-header"><span class="code-label">Empleados activos en Quito, ordenados por salario</span></div>
+        <div class="code-body"><span class="kw">SELECT</span> nombre, ciudad, salario
+<span class="kw">FROM</span> empleados
+<span class="kw">WHERE</span> ciudad = <span class="str">'Quito'</span> <span class="kw">AND</span> activo = <span class="num">1</span>
+<span class="kw">ORDER BY</span> salario <span class="kw">DESC</span>;</div>
+      </div>
+
+      <div class="result-label">Resultado →</div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>nombre</th><th>ciudad</th><th>salario</th></tr></thead>
+          <tbody>
+            <tr><td>Carmen Ríos</td><td>Quito</td><td class="hi">3520</td></tr>
+            <tr><td>Ana Torres</td><td>Quito</td><td class="hi1">3410</td></tr>
+            <tr><td>Marco Díaz</td><td>Quito</td><td class="hi2">1750</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="box box-blue">
+        <div class="box-icon">📋</div>
+        <div class="box-body">
+          <strong>Orden correcto de las cláusulas</strong>
+          SELECT → FROM → WHERE → ORDER BY → LIMIT. MySQL los ejecuta en un orden interno diferente, pero siempre hay que escribirlos en este orden o dará error de sintaxis.
+        </div>
+      </div>
+    </div>
+
+    <!-- ORDER BY + LIMIT -->
+    <span class="section-anchor" id="con-limit"></span>
+    <div class="section">
+      <h2>ORDER BY junto con LIMIT</h2>
+      <p>La combinación ORDER BY + LIMIT es muy poderosa: ordena los resultados y luego corta para obtener el "top N".</p>
+
+      <div class="box box-amber">
+        <div class="box-icon">🥇</div>
+        <div class="box-body">
+          <strong>Analogía del podio</strong>
+          En una maratón, todos los corredores terminan en algún orden. ORDER BY los ordena por tiempo. LIMIT 3 se queda solo con los tres primeros. Juntos forman el podio.
+        </div>
+      </div>
+
+      <div class="code-block">
+        <div class="code-header"><span class="code-label">Top 3 salarios más altos</span></div>
+        <div class="code-body"><span class="kw">SELECT</span> nombre, salario
+<span class="kw">FROM</span> empleados
+<span class="kw">ORDER BY</span> salario <span class="kw">DESC</span>
+<span class="kw">LIMIT</span> <span class="num">3</span>;</div>
+      </div>
+
+      <div class="result-label">Resultado →</div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>#</th><th>nombre</th><th>salario</th></tr></thead>
+          <tbody>
+            <tr><td class="pos">🥇</td><td>Carmen Ríos</td><td class="hi">3520</td></tr>
+            <tr><td class="pos">🥈</td><td>Ana Torres</td><td class="hi1">3410</td></tr>
+            <tr><td class="pos">🥉</td><td>Sofía León</td><td class="hi2">2100</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="code-block">
+        <div class="code-header"><span class="code-label">El empleado con menor salario</span></div>
+        <div class="code-body"><span class="kw">SELECT</span> nombre, salario
+<span class="kw">FROM</span> empleados
+<span class="kw">ORDER BY</span> salario <span class="kw">ASC</span>
+<span class="kw">LIMIT</span> <span class="num">1</span>;</div>
+      </div>
+
+      <div class="code-block">
+        <div class="code-header"><span class="code-label">LIMIT + OFFSET para paginación</span></div>
+        <div class="code-body"><span class="cm">-- Página 1: filas 1 a 3</span>
+<span class="kw">SELECT</span> nombre, salario <span class="kw">FROM</span> empleados
+<span class="kw">ORDER BY</span> salario <span class="kw">DESC</span>
+<span class="kw">LIMIT</span> <span class="num">3</span> <span class="kw">OFFSET</span> <span class="num">0</span>;
+
+<span class="cm">-- Página 2: filas 4 a 6</span>
+<span class="kw">SELECT</span> nombre, salario <span class="kw">FROM</span> empleados
+<span class="kw">ORDER BY</span> salario <span class="kw">DESC</span>
+<span class="kw">LIMIT</span> <span class="num">3</span> <span class="kw">OFFSET</span> <span class="num">3</span>;</div>
+      </div>
+    </div>
+
+    <hr>
+
+    <!-- NULLS -->
+    <span class="section-anchor" id="nulos"></span>
+    <div class="section">
+      <h2>Ordenar con valores NULL</h2>
+      <p>Cuando una columna tiene valores NULL, MySQL los trata de forma especial al ordenar.</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Dirección</th><th>¿Dónde aparecen los NULL?</th></tr></thead>
+          <tbody>
+            <tr><td><span class="tag-cyan">ASC</span></td><td>Los NULL aparecen <strong>primero</strong> (antes de cualquier valor)</td></tr>
+            <tr><td><span class="tag">DESC</span></td><td>Los NULL aparecen <strong>al final</strong> (después de cualquier valor)</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="code-block">
+        <div class="code-header"><span class="code-label">Forzar NULLs al final en orden ASC</span></div>
+        <div class="code-body"><span class="cm">-- Truco: IS NULL devuelve 0 (no null) o 1 (null)
+-- Ordenar primero por ese valor (0 antes que 1)
+-- pone los NULL al final aunque sea ASC</span>
+<span class="kw">SELECT</span> nombre, salario
+<span class="kw">FROM</span> empleados
+<span class="kw">ORDER BY</span> salario <span class="kw">IS NULL</span> <span class="kw">ASC</span>, salario <span class="kw">ASC</span>;</div>
+      </div>
+
+      <div class="box box-accent">
+        <div class="box-icon">ℹ️</div>
+        <div class="box-body">
+          <strong>MySQL 8+ tiene NULLS FIRST / NULLS LAST</strong>
+          En versiones modernas podés escribir directamente <code style="font-family:var(--mono);font-size:0.85em">ORDER BY salario ASC NULLS LAST</code> para controlar exactamente dónde aparecen los valores nulos.
+        </div>
+      </div>
+    </div>
+
+    <!-- TIPOS DE DATOS -->
+    <span class="section-anchor" id="tipos"></span>
+    <div class="section">
+      <h2>ORDER BY según el tipo de dato</h2>
+      <p>El comportamiento de ORDER BY varía según el tipo de dato de la columna:</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Tipo</th><th>Orden ASC</th><th>Ejemplo</th></tr></thead>
+          <tbody>
+            <tr><td><span class="tag-cyan">Numérico</span></td><td>De menor a mayor número</td><td>1, 5, 10, 100, 1000</td></tr>
+            <tr><td><span class="tag-cyan">Texto (VARCHAR)</span></td><td>Alfabético (A → Z)</td><td>Ana, Carmen, Luis, Marco</td></tr>
+            <tr><td><span class="tag-cyan">Fecha (DATE)</span></td><td>De la más antigua a la más nueva</td><td>2020-01-01, 2022-06-15, 2024-03-01</td></tr>
+            <tr><td><span class="tag-cyan">TINYINT / BIT</span></td><td>0 antes que 1</td><td>0, 0, 1, 1, 1</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="box box-amber">
+        <div class="box-icon">⚠️</div>
+        <div class="box-body">
+          <strong>Cuidado con números guardados como texto</strong>
+          Si una columna es VARCHAR pero contiene números, el orden será textual, no numérico: <code style="font-family:var(--mono);font-size:0.85em">'10', '2', '20', '3'</code> → porque '1' &lt; '2' en texto. Para orden numérico correcto, la columna debe ser INT o DECIMAL.
+        </div>
+      </div>
+    </div>
+
+    <!-- ERRORES COMUNES -->
+    <span class="section-anchor" id="errores"></span>
+    <div class="section">
+      <h2>Errores comunes</h2>
+
+      <h3>1. ORDER BY antes que WHERE</h3>
+      <div class="compare">
+        <div class="compare-box">
+          <div class="compare-header bad">✗ Error de sintaxis</div>
+          <div class="code-body"><span class="kw">SELECT</span> nombre, salario
+<span class="kw">FROM</span> empleados
+<span class="kw">ORDER BY</span> salario <span class="kw">DESC</span>
+<span class="kw">WHERE</span> activo = <span class="num">1</span>;
+<span class="cm">-- WHERE debe ir antes
+-- de ORDER BY</span></div>
+        </div>
+        <div class="compare-box">
+          <div class="compare-header good">✓ Correcto</div>
+          <div class="code-body"><span class="kw">SELECT</span> nombre, salario
+<span class="kw">FROM</span> empleados
+<span class="kw">WHERE</span> activo = <span class="num">1</span>
+<span class="kw">ORDER BY</span> salario <span class="kw">DESC</span>;
+<span class="cm">-- WHERE → ORDER BY ✓</span></div>
+        </div>
+      </div>
+
+      <h3 style="margin-top:1.5rem">2. Ordenar por columna que no existe</h3>
+      <div class="compare">
+        <div class="compare-box">
+          <div class="compare-header bad">✗ Error</div>
+          <div class="code-body"><span class="kw">SELECT</span> nombre
+<span class="kw">FROM</span> empleados
+<span class="kw">ORDER BY</span> sueldo;
+<span class="cm">-- "sueldo" no existe,
+-- la columna es "salario"</span></div>
+        </div>
+        <div class="compare-box">
+          <div class="compare-header good">✓ Correcto</div>
+          <div class="code-body"><span class="kw">SELECT</span> nombre
+<span class="kw">FROM</span> empleados
+<span class="kw">ORDER BY</span> salario;
+<span class="cm">-- nombre exacto
+-- de la columna ✓</span></div>
+        </div>
+      </div>
+
+      <h3 style="margin-top:1.5rem">3. Esperar un orden sin ORDER BY</h3>
+      <div class="box box-amber">
+        <div class="box-icon">🎲</div>
+        <div class="box-body">
+          <strong>Sin ORDER BY el orden es impredecible</strong>
+          MySQL puede devolver las filas en cualquier orden dependiendo del motor de almacenamiento, los índices y las operaciones recientes. Si necesitás un orden específico, siempre usá ORDER BY, nunca des el orden por garantizado.
+        </div>
+      </div>
+    </div>
+
+    <hr>
+
+    <!-- RESUMEN -->
+    <span class="section-anchor" id="resumen"></span>
+    <div class="section">
+      <h2>Resumen: ORDER BY completo</h2>
+
+      <div class="code-block">
+        <div class="code-header"><span class="code-label">Todo junto en un ejemplo real</span></div>
+        <div class="code-body"><span class="cm">-- Top 3 empleados activos mejor pagados de Quito</span>
+<span class="kw">SELECT</span>
+  nombre,
+  departamento,
+  salario
+<span class="kw">FROM</span> empleados
+<span class="kw">WHERE</span> ciudad = <span class="str">'Quito'</span>
+  <span class="kw">AND</span> activo = <span class="num">1</span>
+<span class="kw">ORDER BY</span> salario <span class="kw">DESC</span>, nombre <span class="kw">ASC</span>
+<span class="kw">LIMIT</span> <span class="num">3</span>;</div>
+      </div>
+
+      <div class="result-label">Resultado →</div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>nombre</th><th>departamento</th><th>salario</th></tr></thead>
+          <tbody>
+            <tr><td>Carmen Ríos</td><td>Ingeniería</td><td class="hi">3520</td></tr>
+            <tr><td>Ana Torres</td><td>Ingeniería</td><td class="hi1">3410</td></tr>
+            <tr><td>Marco Díaz</td><td>RRHH</td><td class="hi2">1750</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3 style="margin-top:1.75rem">Lo que aprendiste</h3>
+      <ul class="checklist">
+        <li>ORDER BY ordena el resultado de una consulta, no los datos de la tabla</li>
+        <li>ASC ordena de menor a mayor (es el valor por defecto)</li>
+        <li>DESC ordena de mayor a menor</li>
+        <li>Podés ordenar por varias columnas: la segunda desempata a la primera</li>
+        <li>Cada columna en el ORDER BY puede tener su propia dirección (ASC o DESC)</li>
+        <li>ORDER BY siempre va después de WHERE y antes de LIMIT</li>
+        <li>ORDER BY + LIMIT es la forma estándar de obtener el "Top N"</li>
+        <li>Sin ORDER BY, el orden del resultado es impredecible</li>
+        <li>Los NULL aparecen primero con ASC y al final con DESC</li>
+      </ul>
+    </div>
+
+  </article>
+</div>
+
+<footer>
+  <div>Guía de MySQL · <strong>ORDER BY</strong></div>
+  <div>Desarrollado por <strong>Darwin Chamba</strong> · Desarrollador Fullstack</div>
+</footer>
+
+<script>
+  const links   = document.querySelectorAll('.aside-links a');
+  const anchors = document.querySelectorAll('.section-anchor');
+  window.addEventListener('scroll', () => {
+    let current = '';
+    anchors.forEach(a => {
+      if (window.scrollY >= a.offsetTop - 70) current = a.id;
+    });
+    links.forEach(a => a.classList.toggle('active', a.getAttribute('href') === '#' + current));
+  }, { passive: true });
+</script>
+</body>
+</html>
