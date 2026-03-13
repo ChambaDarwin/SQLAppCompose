@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DELETE en MySQL — Guía completa</title>
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;0,700;1,400&family=DM+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../style/style_delete.css">
+</head>
+<body>
+
+<nav>
+  <div class="nav-logo">mysql &gt; DELETE</div>
+  <a class="nav-back" href="index.html">← Volver al índice</a>
+</nav>
+
+<div class="page">
+
+  <!-- SIDEBAR -->
+  <aside>
+    <div class="aside-title">En esta guía</div>
+    <ul class="aside-links">
+      <li><a href="#intro">¿Qué es DELETE?</a></li>
+      <li><a href="#tabla">La tabla ejemplo</a></li>
+      <li><a href="#sintaxis">Sintaxis básica</a></li>
+      <li><a href="#sin-where">Sin WHERE: peligro</a></li>
+      <li><a href="#condiciones">Condiciones en WHERE</a></li>
+      <li><a href="#multiples">Eliminar varias filas</a></li>
+      <li><a href="#truncate">DELETE vs TRUNCATE</a></li>
+      <li><a href="#seguro">Proceso seguro</a></li>
+      <li><a href="#errores">Errores comunes</a></li>
+      <li><a href="#resumen">Resumen</a></li>
+    </ul>
+  </aside>
+
+  <!-- CONTENT -->
+  <article>
+
+    <!-- HERO -->
+    <div class="hero">
+      <div class="hero-tag">MySQL · Nivel básico</div>
+      <h1>Dominando el <em>DELETE</em><br>en MySQL</h1>
+      <p class="hero-lead">Borrar datos parece simple, pero un DELETE mal escrito puede vaciar una tabla entera en un instante. Aprendé a usarlo con precisión y seguridad.</p>
+    </div>
+
+    <!-- ¿QUÉ ES? -->
+    <span class="section-anchor" id="intro"></span>
+    <div class="section">
+      <h2>¿Qué es DELETE?</h2>
+      <p>DELETE FROM elimina filas de una tabla de forma <strong>permanente</strong>. A diferencia de UPDATE (que modifica datos) o SELECT (que solo los lee), DELETE los borra definitivamente sin posibilidad de recuperación, a menos que tengas una copia de seguridad.</p>
+
+      <div class="box box-amber">
+        <div class="box-icon">🗑️</div>
+        <div class="box-body">
+          <strong>Analogía de la papelera</strong>
+          En tu computadora, cuando eliminás un archivo va a la papelera — podés recuperarlo. DELETE en MySQL es diferente: es como borrar el archivo y vaciar la papelera al mismo tiempo. No hay Ctrl+Z. Por eso hay que usarlo siempre con cuidado y verificación previa.
+        </div>
+      </div>
+
+      <p>Se usa cuando necesitás eliminar registros obsoletos, usuarios que cancelaron su cuenta, productos descontinuados, o limpiar datos de prueba en desarrollo.</p>
+    </div>
+
+    <!-- TABLA -->
+    <span class="section-anchor" id="tabla"></span>
+    <div class="section">
+      <h2>La tabla que usaremos</h2>
+      <p>Trabajaremos con la tabla <code style="font-family:var(--mono);font-size:0.83em;background:#f5f2ed;padding:2px 6px;border-radius:4px">empleados</code>:</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>id</th><th>nombre</th><th>ciudad</th><th>departamento</th><th>salario</th><th>activo</th></tr></thead>
+          <tbody>
+            <tr><td>1</td><td>Ana Torres</td><td>Quito</td><td>Ingeniería</td><td>3410</td><td>1</td></tr>
+            <tr><td>2</td><td>Luis Mora</td><td>Guayaquil</td><td>Ventas</td><td>1900</td><td>1</td></tr>
+            <tr><td>3</td><td>Carmen Ríos</td><td>Quito</td><td>Ingeniería</td><td>3520</td><td>1</td></tr>
+            <tr><td>4</td><td>Pedro Vega</td><td>Quito</td><td>Ventas</td><td>1850</td><td>0</td></tr>
+            <tr><td>5</td><td>Sofía León</td><td>Guayaquil</td><td>Ventas</td><td>2100</td><td>1</td></tr>
+            <tr><td>6</td><td>Marco Díaz</td><td>Quito</td><td>RRHH</td><td>1750</td><td>0</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- SINTAXIS -->
+    <span class="section-anchor" id="sintaxis"></span>
+    <div class="section">
+      <h2>Sintaxis básica</h2>
+      <p>DELETE tiene una estructura muy simple. Solo necesitás decirle de qué tabla y con qué condición.</p>
+
+      <div class="anatomy">
+        <div class="anatomy-row">
+          <div class="anatomy-kw">DELETE FROM</div>
+          <div class="anatomy-desc"><strong>¿De qué tabla?</strong> El nombre de la tabla de donde se eliminarán las filas.</div>
+        </div>
+        <div class="anatomy-row">
+          <div class="anatomy-kw">WHERE</div>
+          <div class="anatomy-desc"><strong>¿Qué filas eliminar?</strong> La condición que deben cumplir. <strong>Sin WHERE se borran TODAS las filas.</strong></div>
+        </div>
+      </div>
+
+      <div class="code-block">
+        <div class="code-header"><span class="code-label">Eliminar a Pedro Vega (id = 4)</span></div>
+        <div class="code-body"><span class="kw">DELETE FROM</span> empleados
+<span class="kw">WHERE</span> id = <span class="num">4</span>;</div>
+      </div>
+
+      <div class="result-label">Tabla después del DELETE →</div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>id</th><th>nombre</th><th>ciudad</th><th>departamento</th><th>activo</th></tr></thead>
+          <tbody>
+            <tr><td>1</td><td>Ana Torres</td><td>Quito</td><td>Ingeniería</td><td class="keep">1</td></tr>
+            <tr><td>2</td><td>Luis Mora</td><td>Guayaquil</td><td>Ventas</td><td class="keep">1</td></tr>
+            <tr><td>3</td><td>Carmen Ríos</td><td>Quito</td><td>Ingeniería</td><td class="keep">1</td></tr>
+            <tr class="diff-row-del"><td>4</td><td>Pedro Vega</td><td>Quito</td><td>Ventas</td><td>0</td></tr>
+            <tr><td>5</td><td>Sofía León</td><td>Guayaquil</td><td>Ventas</td><td class="keep">1</td></tr>
+            <tr><td>6</td><td>Marco Díaz</td><td>Quito</td><td>RRHH</td><td>0</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="box box-green">
+        <div class="box-icon">💡</div>
+        <div class="box-body">
+          <strong>Usá siempre el id en WHERE</strong>
+          El <code style="font-family:var(--mono);font-size:0.85em">id</code> identifica una sola fila de forma única. Es la forma más segura de asegurarte de que solo se borre exactamente el registro que querés.
+        </div>
+      </div>
+    </div>
+
+    <!-- SIN WHERE -->
+    <span class="section-anchor" id="sin-where"></span>
+    <div class="section">
+      <h2>El peligro de olvidar WHERE</h2>
+      <p>Este es el error más grave que podés cometer con DELETE. Sin WHERE, MySQL borra <strong>absolutamente todas las filas</strong> de la tabla sin preguntar ni avisar.</p>
+
+      <div class="compare">
+        <div class="compare-box">
+          <div class="compare-header bad">✗ Sin WHERE — catastrófico</div>
+          <div class="code-body"><span class="kw">DELETE FROM</span> empleados;
+
+<span class="cm">-- Resultado: la tabla
+-- queda completamente
+-- vacía. 0 filas.</span></div>
+        </div>
+        <div class="compare-box">
+          <div class="compare-header good">✓ Con WHERE — seguro</div>
+          <div class="code-body"><span class="kw">DELETE FROM</span> empleados
+<span class="kw">WHERE</span> id = <span class="num">4</span>;
+
+<span class="cm">-- Solo se borra
+-- la fila con id = 4.
+-- El resto queda intacto.</span></div>
+        </div>
+      </div>
+
+      <div class="box box-red">
+        <div class="box-icon">⚠️</div>
+        <div class="box-body">
+          <strong>Regla absoluta: nunca DELETE sin WHERE en producción</strong>
+          Un DELETE sin WHERE en una tabla con millones de registros los borra todos en segundos. No hay deshacer. Verificá siempre con un SELECT antes de ejecutar el DELETE.
+        </div>
+      </div>
+
+      <div class="box box-amber">
+        <div class="box-icon">🏎️</div>
+        <div class="box-body">
+          <strong>Analogía del freno de fórmula 1</strong>
+          Un DELETE sin WHERE es como un auto de Fórmula 1 sin frenos: increíblemente rápido y totalmente fuera de control. El WHERE es el sistema de frenos. Sin él, el resultado es el choque inevitable.
+        </div>
+      </div>
+    </div>
+
+    <!-- CONDICIONES -->
+    <span class="section-anchor" id="condiciones"></span>
+    <div class="section">
+      <h2>Condiciones en WHERE</h2>
+      <p>WHERE en DELETE funciona exactamente igual que en SELECT. Podés usar cualquier operador de comparación para apuntar a exactamente las filas que querés borrar.</p>
+
+      <div class="code-block">
+        <div class="code-header"><span class="code-label">Eliminar empleados inactivos (activo = 0)</span></div>
+        <div class="code-body"><span class="kw">DELETE FROM</span> empleados
+<span class="kw">WHERE</span> activo = <span class="num">0</span>;</div>
+      </div>
+
+      <div class="result-label">Filas eliminadas →</div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>id</th><th>nombre</th><th>activo</th><th>¿se elimina?</th></tr></thead>
+          <tbody>
+            <tr><td>1</td><td>Ana Torres</td><td>1</td><td><span class="tag-green">No</span></td></tr>
+            <tr><td>2</td><td>Luis Mora</td><td>1</td><td><span class="tag-green">No</span></td></tr>
+            <tr><td>3</td><td>Carmen Ríos</td><td>1</td><td><span class="tag-green">No</span></td></tr>
+            <tr><td>4</td><td>Pedro Vega</td><td>0</td><td><span class="tag-red">Sí ✗</span></td></tr>
+            <tr><td>5</td><td>Sofía León</td><td>1</td><td><span class="tag-green">No</span></td></tr>
+            <tr><td>6</td><td>Marco Díaz</td><td>0</td><td><span class="tag-red">Sí ✗</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3 style="margin-top:1.5rem">Operadores que podés usar</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Operador</th><th>Ejemplo</th><th>Qué hace</th></tr></thead>
+          <tbody>
+            <tr><td><span class="tag">=</span></td><td><code style="font-family:var(--mono);font-size:0.8em">WHERE id = 5</code></td><td>Elimina la fila con id exacto 5</td></tr>
+            <tr><td><span class="tag">!=</span></td><td><code style="font-family:var(--mono);font-size:0.8em">WHERE activo != 1</code></td><td>Elimina todos los no activos</td></tr>
+            <tr><td><span class="tag">&lt;</span></td><td><code style="font-family:var(--mono);font-size:0.8em">WHERE salario &lt; 1000</code></td><td>Elimina salarios menores a 1000</td></tr>
+            <tr><td><span class="tag">IN</span></td><td><code style="font-family:var(--mono);font-size:0.8em">WHERE id IN (3, 5, 7)</code></td><td>Elimina filas con esos ids</td></tr>
+            <tr><td><span class="tag">LIKE</span></td><td><code style="font-family:var(--mono);font-size:0.8em">WHERE nombre LIKE 'Test%'</code></td><td>Elimina nombres que empiezan con "Test"</td></tr>
+            <tr><td><span class="tag">AND</span></td><td><code style="font-family:var(--mono);font-size:0.8em">WHERE activo=0 AND ciudad='Quito'</code></td><td>Ambas condiciones deben cumplirse</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="code-block">
+        <div class="code-header"><span class="code-label">Eliminar por lista de ids con IN</span></div>
+        <div class="code-body"><span class="kw">DELETE FROM</span> empleados
+<span class="kw">WHERE</span> id <span class="kw">IN</span> (<span class="num">4</span>, <span class="num">6</span>);
+
+<span class="cm">-- Elimina Pedro Vega y Marco Díaz
+-- de una sola sentencia</span></div>
+      </div>
+
+      <div class="code-block">
+        <div class="code-header"><span class="code-label">Combinar condiciones con AND</span></div>
+        <div class="code-body"><span class="kw">DELETE FROM</span> empleados
+<span class="kw">WHERE</span> activo = <span class="num">0</span>
+  <span class="kw">AND</span> departamento = <span class="str">'RRHH'</span>;
+
+<span class="cm">-- Solo borra inactivos del dpto RRHH</span></div>
+      </div>
+    </div>
+
+    <!-- MÚLTIPLES -->
+    <span class="section-anchor" id="multiples"></span>
+    <div class="section">
+      <h2>Eliminar múltiples filas</h2>
+      <p>DELETE puede eliminar muchas filas a la vez si la condición WHERE coincide con varias. Esto es útil para limpiezas masivas de datos.</p>
+
+      <div class="box box-amber">
+        <div class="box-icon">🧹</div>
+        <div class="box-body">
+          <strong>Analogía de la limpieza</strong>
+          Es como contratar a un servicio de limpieza con instrucciones específicas: "eliminar todo lo que esté en mal estado en el almacén". No vas objeto por objeto — dás la instrucción una vez y el servicio aplica el criterio a todos.
+        </div>
+      </div>
+
+      <div class="code-block">
+        <div class="code-header"><span class="code-label">Limpiar datos de prueba</span></div>
+        <div class="code-body"><span class="kw">DELETE FROM</span> usuarios
+<span class="kw">WHERE</span> email <span class="kw">LIKE</span> <span class="str">'%@test.com'</span>;
+
+<span class="cm">-- Elimina todos los usuarios
+-- registrados con emails de prueba</span></div>
+      </div>
+
+      <div class="code-block">
+        <div class="code-header"><span class="code-label">Eliminar registros antiguos</span></div>
+        <div class="code-body"><span class="kw">DELETE FROM</span> logs
+<span class="kw">WHERE</span> fecha < <span class="str">'2023-01-01'</span>;
+
+<span class="cm">-- Borra todos los logs
+-- anteriores al año 2023</span></div>
+      </div>
+
+      <div class="code-block">
+        <div class="code-header"><span class="code-label">LIMIT: borrar máximo N filas por seguridad</span></div>
+        <div class="code-body"><span class="kw">DELETE FROM</span> empleados
+<span class="kw">WHERE</span> activo = <span class="num">0</span>
+<span class="kw">LIMIT</span> <span class="num">10</span>;
+
+<span class="cm">-- Aunque haya 50 inactivos,
+-- solo borra los primeros 10</span></div>
+      </div>
+
+      <div class="box box-blue">
+        <div class="box-icon">🛡️</div>
+        <div class="box-body">
+          <strong>LIMIT como red de seguridad</strong>
+          Agregar <code style="font-family:var(--mono);font-size:0.85em">LIMIT N</code> al DELETE pone un techo máximo de filas a eliminar. Ideal cuando no estás 100% seguro de cuántas filas cumplirán la condición.
+        </div>
+      </div>
+    </div>
+
+    <hr>
+
+    <!-- TRUNCATE -->
+    <span class="section-anchor" id="truncate"></span>
+    <div class="section">
+      <h2>DELETE vs TRUNCATE</h2>
+      <p>Cuando querés vaciar una tabla entera, hay dos opciones. Entender la diferencia es importante.</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th></th><th>DELETE FROM tabla</th><th>TRUNCATE TABLE tabla</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Velocidad</strong></td><td>Más lento (fila por fila)</td><td>Mucho más rápido</td></tr>
+            <tr><td><strong>WHERE</strong></td><td>Sí admite WHERE</td><td>No admite WHERE</td></tr>
+            <tr><td><strong>AUTO_INCREMENT</strong></td><td>El contador continúa</td><td>El contador se reinicia a 1</td></tr>
+            <tr><td><strong>Transacciones</strong></td><td>Se puede deshacer con ROLLBACK</td><td>No se puede deshacer</td></tr>
+            <tr><td><strong>Triggers</strong></td><td>Los activa</td><td>No los activa</td></tr>
+            <tr><td><strong>Uso típico</strong></td><td>Borrar filas específicas</td><td>Vaciar tabla completamente</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="compare">
+        <div class="compare-box">
+          <div class="compare-header bad">DELETE sin WHERE</div>
+          <div class="code-body"><span class="kw">DELETE FROM</span> empleados;
+
+<span class="cm">-- Lento, pero el id
+-- AUTO_INCREMENT
+-- continúa desde
+-- donde estaba</span></div>
+        </div>
+        <div class="compare-box">
+          <div class="compare-header good">TRUNCATE (más eficiente)</div>
+          <div class="code-body"><span class="kw">TRUNCATE TABLE</span> empleados;
+
+<span class="cm">-- Rápido, vacía todo
+-- y reinicia el id
+-- AUTO_INCREMENT a 1</span></div>
+        </div>
+      </div>
+
+      <div class="box box-amber">
+        <div class="box-icon">📌</div>
+        <div class="box-body">
+          <strong>¿Cuándo usar cada uno?</strong>
+          Usá <strong>DELETE + WHERE</strong> para borrar filas específicas. Usá <strong>TRUNCATE</strong> solo cuando querés vaciar la tabla entera de forma rápida, como al limpiar datos de prueba en desarrollo.
+        </div>
+      </div>
+    </div>
+
+    <!-- PROCESO SEGURO -->
+    <span class="section-anchor" id="seguro"></span>
+    <div class="section">
+      <h2>El proceso seguro para hacer un DELETE</h2>
+      <p>Nunca ejecutés un DELETE sin seguir estos pasos, especialmente en bases de datos de producción.</p>
+
+      <div class="steps">
+        <div class="step">
+          <div class="step-num">1</div>
+          <div class="step-body">
+            <h4>Verificá con SELECT primero</h4>
+            <p>Ejecutá el mismo WHERE pero con SELECT para ver exactamente qué filas vas a borrar.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">2</div>
+          <div class="step-body">
+            <h4>Contá las filas afectadas</h4>
+            <p>Usá <code style="font-family:var(--mono);font-size:0.85em">SELECT COUNT(*)</code> para saber cuántas filas se van a eliminar. ¿Es el número que esperabas?</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">3</div>
+          <div class="step-body">
+            <h4>Usá una transacción</h4>
+            <p>Envolvé el DELETE en <code style="font-family:var(--mono);font-size:0.85em">START TRANSACTION</code> para poder hacer ROLLBACK si algo sale mal.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">4</div>
+          <div class="step-body">
+            <h4>Confirmá con COMMIT</h4>
+            <p>Solo después de verificar que el resultado es correcto, ejecutá COMMIT para hacer permanente el borrado.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="code-block">
+        <div class="code-header"><span class="code-label">Flujo completo y seguro</span></div>
+        <div class="code-body"><span class="cm">-- Paso 1: ver qué se va a borrar</span>
+<span class="kw">SELECT</span> * <span class="kw">FROM</span> empleados
+<span class="kw">WHERE</span> activo = <span class="num">0</span>;
+
+<span class="cm">-- Paso 2: contar las filas</span>
+<span class="kw">SELECT</span> <span class="fn">COUNT</span>(*) <span class="kw">FROM</span> empleados
+<span class="kw">WHERE</span> activo = <span class="num">0</span>;
+
+<span class="cm">-- Paso 3: iniciar transacción</span>
+<span class="kw">START TRANSACTION</span>;
+
+<span class="kw">DELETE FROM</span> empleados
+<span class="kw">WHERE</span> activo = <span class="num">0</span>;
+
+<span class="cm">-- Paso 4: verificar resultado</span>
+<span class="kw">SELECT</span> * <span class="kw">FROM</span> empleados;
+
+<span class="cm">-- Si está bien → confirmar</span>
+<span class="kw">COMMIT</span>;
+
+<span class="cm">-- Si algo salió mal → deshacer</span>
+<span class="cm">-- ROLLBACK;</span></div>
+      </div>
+    </div>
+
+    <!-- ERRORES -->
+    <span class="section-anchor" id="errores"></span>
+    <div class="section">
+      <h2>Errores comunes</h2>
+
+      <h3>1. WHERE con texto ambiguo en vez de id</h3>
+      <div class="compare">
+        <div class="compare-box">
+          <div class="compare-header bad">✗ Ambiguo</div>
+          <div class="code-body"><span class="kw">DELETE FROM</span> empleados
+<span class="kw">WHERE</span> nombre = <span class="str">'Ana'</span>;
+<span class="cm">-- ¿Cuántas "Ana"
+-- hay en la tabla?</span></div>
+        </div>
+        <div class="compare-box">
+          <div class="compare-header good">✓ Preciso</div>
+          <div class="code-body"><span class="kw">DELETE FROM</span> empleados
+<span class="kw">WHERE</span> id = <span class="num">1</span>;
+<span class="cm">-- Solo una fila
+-- con ese id ✓</span></div>
+        </div>
+      </div>
+
+      <h3 style="margin-top:1.5rem">2. Olvidar que DELETE no tiene UNDO</h3>
+      <div class="compare">
+        <div class="compare-box">
+          <div class="compare-header bad">✗ Sin respaldo</div>
+          <div class="code-body"><span class="kw">DELETE FROM</span> pedidos
+<span class="kw">WHERE</span> año = <span class="num">2020</span>;
+<span class="cm">-- Sin backup ni
+-- transacción. Si
+-- te equivocaste,
+-- no hay vuelta atrás.</span></div>
+        </div>
+        <div class="compare-box">
+          <div class="compare-header good">✓ Con transacción</div>
+          <div class="code-body"><span class="kw">START TRANSACTION</span>;
+<span class="kw">DELETE FROM</span> pedidos
+<span class="kw">WHERE</span> año = <span class="num">2020</span>;
+<span class="cm">-- Revisás y decidís:
+-- COMMIT o ROLLBACK</span></div>
+        </div>
+      </div>
+
+      <h3 style="margin-top:1.5rem">3. Intentar borrar con una clave foránea activa</h3>
+      <div class="box box-red">
+        <div class="box-icon">🔗</div>
+        <div class="box-body">
+          <strong>Error: Cannot delete or update a parent row</strong>
+          Si la fila que intentás borrar está referenciada por otra tabla (clave foránea), MySQL no te dejará. Primero debés borrar o actualizar las filas hijas, o desactivar temporalmente la restricción con <code style="font-family:var(--mono);font-size:0.85em">SET FOREIGN_KEY_CHECKS = 0</code>.
+        </div>
+      </div>
+    </div>
+
+    <hr>
+
+    <!-- RESUMEN -->
+    <span class="section-anchor" id="resumen"></span>
+    <div class="section">
+      <h2>Resumen: DELETE completo</h2>
+
+      <div class="code-block">
+        <div class="code-header"><span class="code-label">Todo junto en un ejemplo real</span></div>
+        <div class="code-body"><span class="cm">-- 1. Ver qué se va a borrar</span>
+<span class="kw">SELECT</span> nombre, activo <span class="kw">FROM</span> empleados
+<span class="kw">WHERE</span> activo = <span class="num">0</span> <span class="kw">AND</span> departamento = <span class="str">'RRHH'</span>;
+
+<span class="cm">-- 2. Contar filas afectadas</span>
+<span class="kw">SELECT</span> <span class="fn">COUNT</span>(*) <span class="kw">FROM</span> empleados
+<span class="kw">WHERE</span> activo = <span class="num">0</span> <span class="kw">AND</span> departamento = <span class="str">'RRHH'</span>;
+
+<span class="cm">-- 3. Ejecutar con transacción</span>
+<span class="kw">START TRANSACTION</span>;
+
+<span class="kw">DELETE FROM</span> empleados
+<span class="kw">WHERE</span> activo = <span class="num">0</span>
+  <span class="kw">AND</span> departamento = <span class="str">'RRHH'</span>
+<span class="kw">LIMIT</span> <span class="num">5</span>;
+
+<span class="kw">COMMIT</span>;</div>
+      </div>
+
+      <h3 style="margin-top:1.75rem">Lo que aprendiste</h3>
+      <ul class="checklist">
+        <li>DELETE FROM elimina filas permanentemente — no hay deshacer sin transacción</li>
+        <li>WHERE determina qué filas se eliminan — sin WHERE se borran todas</li>
+        <li>Usá siempre el id en WHERE para borrar exactamente una fila</li>
+        <li>IN permite eliminar varias filas específicas en una sola sentencia</li>
+        <li>LIMIT pone un tope máximo de filas eliminadas por seguridad</li>
+        <li>Verificá siempre con SELECT y COUNT(*) antes de ejecutar el DELETE</li>
+        <li>Usá START TRANSACTION para poder hacer ROLLBACK si algo sale mal</li>
+        <li>TRUNCATE vacía la tabla completa más rápido y reinicia el AUTO_INCREMENT</li>
+      </ul>
+    </div>
+
+  </article>
+</div>
+
+<footer>
+  <div>Guía de MySQL · <strong>DELETE</strong></div>
+  <div>Desarrollado por <strong>Darwin Chamba</strong> · Desarrollador Fullstack</div>
+</footer>
+
+<script>
+  const links   = document.querySelectorAll('.aside-links a');
+  const anchors = document.querySelectorAll('.section-anchor');
+  window.addEventListener('scroll', () => {
+    let current = '';
+    anchors.forEach(a => {
+      if (window.scrollY >= a.offsetTop - 70) current = a.id;
+    });
+    links.forEach(a => a.classList.toggle('active', a.getAttribute('href') === '#' + current));
+  }, { passive: true });
+</script>
+</body>
+</html>
