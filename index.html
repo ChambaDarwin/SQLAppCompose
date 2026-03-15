@@ -68,19 +68,19 @@ const levels = [
     num: "07", title: "Funciones", command: "Funciones de agregado",
     desc: "COUNT, SUM, AVG, MAX y MIN calculan resultados sobre un conjunto de filas.",
     code: `SELECT COUNT(*), AVG(edad)\nFROM usuarios;`,
-    page: null
+    page: "./topic/funciones.html"
   },
   {
     num: "08", title: "GROUP BY", command: "Agrupar resultados",
     desc: "Agrupa filas con el mismo valor y aplica funciones de agregado por cada grupo.",
     code: `SELECT ciudad, COUNT(*)\nFROM usuarios\nGROUP BY ciudad;`,
-    page: null
+    page: "./topic/groupby.html"
   },
   {
     num: "09", title: "JOIN", command: "Combinar tablas",
     desc: "Une filas de dos o más tablas usando una columna relacionada entre ellas.",
     code: `SELECT u.nombre, p.producto\nFROM usuarios u\nINNER JOIN pedidos p\n  ON u.id = p.usuario_id;`,
-    page: null
+    page: "./topic/join.html"
   },
   {
     num: "10", title: "Subconsultas", command: "Consultas anidadas",

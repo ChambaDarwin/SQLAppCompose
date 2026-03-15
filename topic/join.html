@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>JOIN en MySQL — Guía completa</title>
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;0,700;1,400&family=DM+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../style/join.css">
+</head>
+<body>
+
+<nav>
+  <div class="nav-logo">mysql &gt; JOIN</div>
+  <a class="nav-back" href="index.html">← Volver al índice</a>
+</nav>
+
+<div class="page">
+  <aside>
+    <div class="aside-title">En esta guía</div>
+    <ul class="aside-links">
+      <li><a href="#intro">¿Qué es JOIN?</a></li>
+      <li><a href="#tablas">Las tablas ejemplo</a></li>
+      <li><a href="#claves">Claves PK y FK</a></li>
+      <li><a href="#inner">INNER JOIN</a></li>
+      <li><a href="#left">LEFT JOIN</a></li>
+      <li><a href="#right">RIGHT JOIN</a></li>
+      <li><a href="#alias">Alias de tablas</a></li>
+      <li><a href="#multiples">Múltiples JOINs</a></li>
+      <li><a href="#con-where">JOIN + WHERE</a></li>
+      <li><a href="#errores">Errores comunes</a></li>
+      <li><a href="#resumen">Resumen</a></li>
+    </ul>
+  </aside>
+
+  <article>
+
+    <!-- HERO -->
+    <div class="hero">
+      <div class="hero-tag">MySQL · Nivel intermedio</div>
+      <h1>Dominando el <em>JOIN</em><br>en MySQL</h1>
+      <p class="hero-lead">Los datos reales viven en varias tablas relacionadas entre sí. JOIN es el comando que las une para que puedas consultarlas juntas en una sola consulta.</p>
+    </div>
+
+    <!-- INTRO -->
+    <span class="section-anchor" id="intro"></span>
+    <div class="section">
+      <h2>¿Qué es JOIN?</h2>
+      <p>JOIN combina filas de dos o más tablas basándose en una columna que tienen en común. En lugar de repetir todos los datos en una sola tabla gigante, las bases de datos relacionales dividen la información en tablas más pequeñas y las conectan con JOIN cuando las necesitas juntas.</p>
+
+      <div class="box box-amber">
+        <div class="box-icon">🧩</div>
+        <div class="box-body">
+          <strong>Analogía del rompecabezas</strong>
+          Imagina que tenés dos piezas de rompecabezas: una con el nombre y ciudad del cliente, otra con sus pedidos. JOIN encuentra la pieza encajante — el id del cliente — y las une para mostrarte el cuadro completo: quién compró qué. Sin JOIN, solo verías la mitad del rompecabezas.
+        </div>
+      </div>
+
+      <p>Existen varios tipos de JOIN. Los más usados son:</p>
+
+      <div class="join-cards">
+        <div class="join-card inner">
+          <div class="join-card-name">INNER JOIN</div>
+          <div class="join-card-desc">Solo filas con coincidencia en ambas tablas</div>
+        </div>
+        <div class="join-card left">
+          <div class="join-card-name">LEFT JOIN</div>
+          <div class="join-card-desc">Todas las filas de la izquierda, coincidan o no</div>
+        </div>
+        <div class="join-card right">
+          <div class="join-card-name">RIGHT JOIN</div>
+          <div class="join-card-desc">Todas las filas de la derecha, coincidan o no</div>
+        </div>
+        <div class="join-card">
+          <div class="join-card-name">CROSS JOIN</div>
+          <div class="join-card-desc">Cada fila con cada fila (producto cartesiano)</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TABLAS EJEMPLO -->
+    <span class="section-anchor" id="tablas"></span>
+    <div class="section">
+      <h2>Las tablas que usaremos</h2>
+      <p>Trabajaremos con dos tablas relacionadas: <code style="font-family:var(--mono);font-size:0.83em;background:#f5f2ed;padding:2px 6px;border-radius:4px">clientes</code> y <code style="font-family:var(--mono);font-size:0.83em;background:#f5f2ed;padding:2px 6px;border-radius:4px">pedidos</code>.</p>
+
+      <h3>Tabla: clientes</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>id</th><th>nombre</th><th>ciudad</th><th>email</th></tr></thead>
+          <tbody>
+            <tr><td class="hi-b">1</td><td>Ana Torres</td><td>Quito</td><td>ana@email.com</td></tr>
+            <tr><td class="hi-b">2</td><td>Luis Mora</td><td>Guayaquil</td><td>luis@email.com</td></tr>
+            <tr><td class="hi-b">3</td><td>Carmen Ríos</td><td>Cuenca</td><td>carmen@email.com</td></tr>
+            <tr><td class="hi-b">4</td><td>Pedro Vega</td><td>Quito</td><td>pedro@email.com</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Tabla: pedidos</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>id</th><th>cliente_id</th><th>producto</th><th>monto</th><th>fecha</th></tr></thead>
+          <tbody>
+            <tr><td>101</td><td class="hi-g">1</td><td>Laptop</td><td>1200.00</td><td>2024-01-10</td></tr>
+            <tr><td>102</td><td class="hi-g">2</td><td>Mouse</td><td>25.00</td><td>2024-01-15</td></tr>
+            <tr><td>103</td><td class="hi-g">1</td><td>Monitor</td><td>350.00</td><td>2024-02-01</td></tr>
+            <tr><td>104</td><td class="hi-g">3</td><td>Teclado</td><td>80.00</td><td>2024-02-10</td></tr>
+            <tr><td>105</td><td class="hi-g">2</td><td>Webcam</td><td>60.00</td><td>2024-03-05</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="box box-blue">
+        <div class="box-icon">🔗</div>
+        <div class="box-body">
+          <strong>La conexión entre tablas</strong>
+          <code style="font-family:var(--mono);font-size:0.85em">clientes.id</code> (azul) es la clave primaria. <code style="font-family:var(--mono);font-size:0.85em">pedidos.cliente_id</code> (verde) es la clave foránea que referencia a la primera. JOIN une las filas donde ambos valores son iguales. Pedro Vega (id=4) no tiene pedidos — lo veremos con LEFT JOIN.
+        </div>
+      </div>
+    </div>
+
+    <!-- CLAVES -->
+    <span class="section-anchor" id="claves"></span>
+    <div class="section">
+      <h2>Claves primarias y foráneas</h2>
+      <p>Antes de usar JOIN, hay que entender las dos columnas que conectan las tablas.</p>
+
+      <div class="anatomy">
+        <div class="anatomy-row">
+          <div class="anatomy-kw">PRIMARY KEY</div>
+          <div class="anatomy-desc"><strong>Identificador único de cada fila.</strong> En la tabla <code style="font-family:var(--mono);font-size:0.85em">clientes</code>, el campo <code style="font-family:var(--mono);font-size:0.85em">id</code> es la PK. No puede repetirse ni ser NULL.</div>
+        </div>
+        <div class="anatomy-row">
+          <div class="anatomy-kw">FOREIGN KEY</div>
+          <div class="anatomy-desc"><strong>Referencia a la PK de otra tabla.</strong> En <code style="font-family:var(--mono);font-size:0.85em">pedidos</code>, el campo <code style="font-family:var(--mono);font-size:0.85em">cliente_id</code> apunta al <code style="font-family:var(--mono);font-size:0.85em">id</code> de la tabla clientes. Crea la relación entre tablas.</div>
+        </div>
+        <div class="anatomy-row">
+          <div class="anatomy-kw">ON</div>
+          <div class="anatomy-desc"><strong>La condición de unión.</strong> Le dice a MySQL qué columnas deben coincidir: <code style="font-family:var(--mono);font-size:0.85em">ON clientes.id = pedidos.cliente_id</code></div>
+        </div>
+      </div>
+
+      <div class="box box-amber">
+        <div class="box-icon">🔑</div>
+        <div class="box-body">
+          <strong>Analogía del número de empleado</strong>
+          En una empresa, cada empleado tiene un número único (PK). En la tabla de nómina, ese número aparece en cada registro de pago (FK). JOIN es como buscar en la nómina el número de empleado y traer su nombre de la tabla de personal — conecta los datos sin repetirlos.
+        </div>
+      </div>
+    </div>
+
+    <hr>
+
+    <!-- INNER JOIN -->
+    <span class="section-anchor" id="inner"></span>
+    <div class="section">
+      <h2>INNER JOIN — Solo coincidencias</h2>
+      <p>INNER JOIN devuelve únicamente las filas que tienen <strong>coincidencia en ambas tablas</strong>. Si un cliente no tiene pedidos, no aparece. Si un pedido no tiene cliente válido, tampoco aparece.</p>
+
+      <div class="box box-blue">
+        <div class="box-icon">🎯</div>
+        <div class="box-body">
+          <strong>Analogía de la intersección</strong>
+          INNER JOIN es como la zona donde dos círculos se superponen en un diagrama de Venn: solo lo que está en ambos al mismo tiempo. Todo lo que está solo en un círculo queda fuera.
+        </div>
+      </div>
+
+      <div class="code-block">
+        <div class="code-header"><span class="code-label">Clientes con sus pedidos (INNER JOIN)</span></div>
+        <div class="code-body"><span class="kw">SELECT</span>
+  <span class="tbl">clientes</span>.nombre,
+  <span class="tbl">clientes</span>.ciudad,
+  <span class="tbl">pedidos</span>.producto,
+  <span class="tbl">pedidos</span>.monto
+<span class="kw">FROM</span> <span class="tbl">clientes</span>
+<span class="kw">INNER JOIN</span> <span class="tbl">pedidos</span>
+  <span class="kw">ON</span> <span class="tbl">clientes</span>.id = <span class="tbl">pedidos</span>.cliente_id;</div>
+      </div>
+
+      <div class="result-label">Resultado → Pedro Vega no aparece porque no tiene pedidos</div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>nombre</th><th>ciudad</th><th>producto</th><th>monto</th></tr></thead>
+          <tbody>
+            <tr><td class="hi-b">Ana Torres</td><td>Quito</td><td>Laptop</td><td>1200.00</td></tr>
+            <tr><td class="hi-g">Luis Mora</td><td>Guayaquil</td><td>Mouse</td><td>25.00</td></tr>
+            <tr><td class="hi-b">Ana Torres</td><td>Quito</td><td>Monitor</td><td>350.00</td></tr>
+            <tr><td class="hi-a">Carmen Ríos</td><td>Cuenca</td><td>Teclado</td><td>80.00</td></tr>
+            <tr><td class="hi-g">Luis Mora</td><td>Guayaquil</td><td>Webcam</td><td>60.00</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- LEFT JOIN -->
+    <span class="section-anchor" id="left"></span>
+    <div class="section">
+      <h2>LEFT JOIN — Todos los de la izquierda</h2>
+      <p>LEFT JOIN devuelve <strong>todas las filas de la tabla izquierda</strong> (la que está antes del JOIN), aunque no tengan coincidencia en la tabla derecha. Donde no hay coincidencia, aparece NULL.</p>
+
+      <div class="box box-amber">
+        <div class="box-icon">📋</div>
+        <div class="box-body">
+          <strong>Analogía de la lista de asistencia</strong>
+          Es como la lista completa de estudiantes matriculados. Aunque algunos no asistieron a ninguna clase, siguen apareciendo en la lista — con un espacio vacío (NULL) donde deberían ir sus notas. LEFT JOIN garantiza que todos los de la lista izquierda aparezcan.
+        </div>
+      </div>
+
+      <div class="code-block">
+        <div class="code-header"><span class="code-label">Todos los clientes, hayan pedido o no (LEFT JOIN)</span></div>
+        <div class="code-body"><span class="kw">SELECT</span>
+  <span class="tbl">c</span>.nombre,
+  <span class="tbl">c</span>.ciudad,
+  <span class="tbl">p</span>.producto,
+  <span class="tbl">p</span>.monto
+<span class="kw">FROM</span> <span class="tbl">clientes</span> <span class="tbl">c</span>
+<span class="kw">LEFT JOIN</span> <span class="tbl">pedidos</span> <span class="tbl">p</span>
+  <span class="kw">ON</span> <span class="tbl">c</span>.id = <span class="tbl">p</span>.cliente_id;</div>
+      </div>
+
+      <div class="result-label">Resultado → Pedro Vega aparece con NULL en producto y monto</div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>nombre</th><th>ciudad</th><th>producto</th><th>monto</th></tr></thead>
+          <tbody>
+            <tr><td class="hi-b">Ana Torres</td><td>Quito</td><td>Laptop</td><td>1200.00</td></tr>
+            <tr><td class="hi-g">Luis Mora</td><td>Guayaquil</td><td>Mouse</td><td>25.00</td></tr>
+            <tr><td class="hi-b">Ana Torres</td><td>Quito</td><td>Monitor</td><td>350.00</td></tr>
+            <tr><td class="hi-a">Carmen Ríos</td><td>Cuenca</td><td>Teclado</td><td>80.00</td></tr>
+            <tr><td class="hi-g">Luis Mora</td><td>Guayaquil</td><td>Webcam</td><td>60.00</td></tr>
+            <tr><td class="hi-t">Pedro Vega</td><td>Quito</td><td class="null-c">NULL</td><td class="null-c">NULL</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="box box-green">
+        <div class="box-icon">💡</div>
+        <div class="box-body">
+          <strong>Truco: encontrar filas sin coincidencia</strong>
+          Con LEFT JOIN + WHERE IS NULL podés encontrar clientes que nunca compraron: <code style="font-family:var(--mono);font-size:0.85em">WHERE p.cliente_id IS NULL</code>
+        </div>
+      </div>
+
+      <div class="code-block">
+        <div class="code-header"><span class="code-label">Clientes que NUNCA han hecho un pedido</span></div>
+        <div class="code-body"><span class="kw">SELECT</span> <span class="tbl">c</span>.nombre, <span class="tbl">c</span>.ciudad
+<span class="kw">FROM</span> <span class="tbl">clientes</span> <span class="tbl">c</span>
+<span class="kw">LEFT JOIN</span> <span class="tbl">pedidos</span> <span class="tbl">p</span>
+  <span class="kw">ON</span> <span class="tbl">c</span>.id = <span class="tbl">p</span>.cliente_id
+<span class="kw">WHERE</span> <span class="tbl">p</span>.cliente_id <span class="kw">IS NULL</span>;</div>
+      </div>
+
+      <div class="result-label">Resultado →</div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>nombre</th><th>ciudad</th></tr></thead>
+          <tbody>
+            <tr><td class="hi-t">Pedro Vega</td><td>Quito</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- RIGHT JOIN -->
+    <span class="section-anchor" id="right"></span>
+    <div class="section">
+      <h2>RIGHT JOIN — Todos los de la derecha</h2>
+      <p>RIGHT JOIN es el espejo de LEFT JOIN: devuelve <strong>todas las filas de la tabla derecha</strong>, aunque no tengan coincidencia en la izquierda. En la práctica es poco usado — casi siempre se puede reescribir como LEFT JOIN cambiando el orden de las tablas.</p>
+
+      <div class="compare">
+        <div class="compare-box">
+          <div class="compare-header inner">LEFT JOIN equivalente</div>
+          <div class="code-body"><span class="kw">SELECT</span> * <span class="kw">FROM</span> <span class="tbl">clientes</span> <span class="tbl">c</span>
+<span class="kw">LEFT JOIN</span> <span class="tbl">pedidos</span> <span class="tbl">p</span>
+  <span class="kw">ON</span> <span class="tbl">c</span>.id = <span class="tbl">p</span>.cliente_id;
+<span class="cm">-- Todos los clientes</span></div>
+        </div>
+        <div class="compare-box">
+          <div class="compare-header right">RIGHT JOIN equivalente</div>
+          <div class="code-body"><span class="kw">SELECT</span> * <span class="kw">FROM</span> <span class="tbl">pedidos</span> <span class="tbl">p</span>
+<span class="kw">RIGHT JOIN</span> <span class="tbl">clientes</span> <span class="tbl">c</span>
+  <span class="kw">ON</span> <span class="tbl">c</span>.id = <span class="tbl">p</span>.cliente_id;
+<span class="cm">-- Mismo resultado, tablas
+-- en orden invertido</span></div>
+        </div>
+      </div>
+
+      <div class="box box-teal">
+        <div class="box-icon">💡</div>
+        <div class="box-body">
+          <strong>Preferí LEFT JOIN sobre RIGHT JOIN</strong>
+          Son equivalentes en potencia, pero LEFT JOIN es más fácil de leer. La mayoría de desarrolladores y equipos usan LEFT JOIN consistentemente y cuando necesitan la otra tabla completa, la ponen primero en el FROM.
+        </div>
+      </div>
+    </div>
+
+    <!-- DIAGRAMA VENN -->
+    <div class="section">
+      <h2>Resumen visual: tipos de JOIN</h2>
+
+      <div class="venn-grid">
+        <div class="venn-box">
+          <svg viewBox="0 0 140 80" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="52" cy="40" r="30" fill="#eff6ff" stroke="#93c5fd" stroke-width="1.5" opacity="0.7"/>
+            <circle cx="88" cy="40" r="30" fill="#eff6ff" stroke="#93c5fd" stroke-width="1.5" opacity="0.7"/>
+            <ellipse cx="70" cy="40" rx="18" ry="28" fill="#2563eb" opacity="0.5"/>
+            <text x="36" y="44" font-size="9" fill="#1e3a8a" font-family="sans-serif">A</text>
+            <text x="98" y="44" font-size="9" fill="#1e3a8a" font-family="sans-serif">B</text>
+          </svg>
+          <div class="venn-label" style="color:var(--blue)">INNER JOIN</div>
+          <div class="venn-desc">Solo intersección</div>
+        </div>
+        <div class="venn-box">
+          <svg viewBox="0 0 140 80" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="52" cy="40" r="30" fill="#16a34a" stroke="#86efac" stroke-width="1.5" opacity="0.4"/>
+            <circle cx="88" cy="40" r="30" fill="#f0fdf4" stroke="#86efac" stroke-width="1.5" opacity="0.7"/>
+            <text x="36" y="44" font-size="9" fill="#14532d" font-family="sans-serif">A</text>
+            <text x="98" y="44" font-size="9" fill="#14532d" font-family="sans-serif">B</text>
+          </svg>
+          <div class="venn-label" style="color:var(--green)">LEFT JOIN</div>
+          <div class="venn-desc">Todo A + coincidencias</div>
+        </div>
+        <div class="venn-box">
+          <svg viewBox="0 0 140 80" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="52" cy="40" r="30" fill="#ecfeff" stroke="#67e8f9" stroke-width="1.5" opacity="0.7"/>
+            <circle cx="88" cy="40" r="30" fill="#0891b2" stroke="#67e8f9" stroke-width="1.5" opacity="0.4"/>
+            <text x="36" y="44" font-size="9" fill="#164e63" font-family="sans-serif">A</text>
+            <text x="98" y="44" font-size="9" fill="#164e63" font-family="sans-serif">B</text>
+          </svg>
+          <div class="venn-label" style="color:var(--teal)">RIGHT JOIN</div>
+          <div class="venn-desc">Todo B + coincidencias</div>
+        </div>
+        <div class="venn-box">
+          <svg viewBox="0 0 140 80" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="52" cy="40" r="30" fill="#d97706" stroke="#fcd34d" stroke-width="1.5" opacity="0.35"/>
+            <circle cx="88" cy="40" r="30" fill="#d97706" stroke="#fcd34d" stroke-width="1.5" opacity="0.35"/>
+            <text x="36" y="44" font-size="9" fill="#78350f" font-family="sans-serif">A</text>
+            <text x="98" y="44" font-size="9" fill="#78350f" font-family="sans-serif">B</text>
+          </svg>
+          <div class="venn-label" style="color:var(--amber)">CROSS JOIN</div>
+          <div class="venn-desc">Todo A × Todo B</div>
+        </div>
+      </div>
+    </div>
+
+    <hr>
+
+    <!-- ALIAS -->
+    <span class="section-anchor" id="alias"></span>
+    <div class="section">
+      <h2>Alias de tablas</h2>
+      <p>Cuando trabajas con varias tablas, escribir el nombre completo cada vez es tedioso. Los alias le dan un nombre corto a cada tabla para que el código sea más limpio.</p>
+
+      <div class="compare">
+        <div class="compare-box">
+          <div class="compare-header bad">Sin alias — verboso</div>
+          <div class="code-body"><span class="kw">SELECT</span>
+  clientes.nombre,
+  clientes.ciudad,
+  pedidos.producto,
+  pedidos.monto
+<span class="kw">FROM</span> clientes
+<span class="kw">INNER JOIN</span> pedidos
+  <span class="kw">ON</span> clientes.id =
+     pedidos.cliente_id;</div>
+        </div>
+        <div class="compare-box">
+          <div class="compare-header good">Con alias — limpio</div>
+          <div class="code-body"><span class="kw">SELECT</span>
+  <span class="tbl">c</span>.nombre,
+  <span class="tbl">c</span>.ciudad,
+  <span class="tbl">p</span>.producto,
+  <span class="tbl">p</span>.monto
+<span class="kw">FROM</span> <span class="tbl">clientes</span> <span class="tbl">c</span>
+<span class="kw">INNER JOIN</span> <span class="tbl">pedidos</span> <span class="tbl">p</span>
+  <span class="kw">ON</span> <span class="tbl">c</span>.id = <span class="tbl">p</span>.cliente_id;</div>
+        </div>
+      </div>
+
+      <div class="box box-green">
+        <div class="box-icon">💡</div>
+        <div class="box-body">
+          <strong>Convención de alias</strong>
+          Usa la primera letra de la tabla: <code style="font-family:var(--mono);font-size:0.85em">clientes → c</code>, <code style="font-family:var(--mono);font-size:0.85em">pedidos → p</code>. Si hay ambigüedad, usa las dos primeras: <code style="font-family:var(--mono);font-size:0.85em">cl</code>, <code style="font-family:var(--mono);font-size:0.85em">pe</code>. El alias se define después del nombre de la tabla en el FROM.
+        </div>
+      </div>
+    </div>
+
+    <!-- MÚLTIPLES JOINS -->
+    <span class="section-anchor" id="multiples"></span>
+    <div class="section">
+      <h2>Múltiples JOINs</h2>
+      <p>Podés encadenar tantos JOINs como necesites para unir más de dos tablas. Cada JOIN agrega una tabla nueva al resultado.</p>
+
+      <p>Supongamos que tenemos una tercera tabla <code style="font-family:var(--mono);font-size:0.83em;background:#f5f2ed;padding:2px 6px;border-radius:4px">productos</code>:</p>
+
+      <div class="code-block">
+        <div class="code-header"><span class="code-label">Unir 3 tablas: clientes + pedidos + productos</span></div>
+        <div class="code-body"><span class="kw">SELECT</span>
+  <span class="tbl">c</span>.nombre        <span class="kw">AS</span> cliente,
+  <span class="tbl">p</span>.fecha          <span class="kw">AS</span> fecha_pedido,
+  <span class="tbl">pr</span>.nombre        <span class="kw">AS</span> producto,
+  <span class="tbl">pr</span>.categoria     <span class="kw">AS</span> categoria,
+  <span class="tbl">p</span>.monto
+<span class="kw">FROM</span> <span class="tbl">clientes</span> <span class="tbl">c</span>
+<span class="kw">INNER JOIN</span> <span class="tbl">pedidos</span> <span class="tbl">p</span>
+  <span class="kw">ON</span> <span class="tbl">c</span>.id = <span class="tbl">p</span>.cliente_id
+<span class="kw">INNER JOIN</span> <span class="tbl">productos</span> <span class="tbl">pr</span>
+  <span class="kw">ON</span> <span class="tbl">p</span>.producto_id = <span class="tbl">pr</span>.id
+<span class="kw">ORDER BY</span> <span class="tbl">c</span>.nombre, <span class="tbl">p</span>.fecha;</div>
+      </div>
+
+      <div class="box box-blue">
+        <div class="box-icon">📌</div>
+        <div class="box-body">
+          <strong>Cada JOIN agrega una tabla</strong>
+          No hay límite de JOINs en una consulta. Sin embargo, demasiados JOINs pueden volverla lenta. Para consultas complejas, asegurate de que las columnas usadas en ON tengan índices.
+        </div>
+      </div>
+    </div>
+
+    <!-- JOIN + WHERE -->
+    <span class="section-anchor" id="con-where"></span>
+    <div class="section">
+      <h2>JOIN + WHERE y funciones</h2>
+      <p>Podés combinar JOIN con WHERE para filtrar, y con GROUP BY + funciones de agregado para resumir datos de múltiples tablas.</p>
+
+      <div class="code-block">
+        <div class="code-header"><span class="code-label">Total comprado por cada cliente de Quito</span></div>
+        <div class="code-body"><span class="kw">SELECT</span>
+  <span class="tbl">c</span>.nombre,
+  <span class="fn">COUNT</span>(<span class="tbl">p</span>.id)   <span class="kw">AS</span> num_pedidos,
+  <span class="fn">SUM</span>(<span class="tbl">p</span>.monto) <span class="kw">AS</span> total_comprado
+<span class="kw">FROM</span> <span class="tbl">clientes</span> <span class="tbl">c</span>
+<span class="kw">INNER JOIN</span> <span class="tbl">pedidos</span> <span class="tbl">p</span>
+  <span class="kw">ON</span> <span class="tbl">c</span>.id = <span class="tbl">p</span>.cliente_id
+<span class="kw">WHERE</span> <span class="tbl">c</span>.ciudad = <span class="str">'Quito'</span>
+<span class="kw">GROUP BY</span> <span class="tbl">c</span>.id, <span class="tbl">c</span>.nombre
+<span class="kw">ORDER BY</span> total_comprado <span class="kw">DESC</span>;</div>
+      </div>
+
+      <div class="result-label">Resultado →</div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>nombre</th><th>num_pedidos</th><th>total_comprado</th></tr></thead>
+          <tbody>
+            <tr><td class="hi-b">Ana Torres</td><td>2</td><td>1550.00</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="code-block">
+        <div class="code-header"><span class="code-label">Todos los clientes con su total (incluyendo sin pedidos)</span></div>
+        <div class="code-body"><span class="kw">SELECT</span>
+  <span class="tbl">c</span>.nombre,
+  <span class="fn">COUNT</span>(<span class="tbl">p</span>.id)              <span class="kw">AS</span> num_pedidos,
+  <span class="fn">COALESCE</span>(<span class="fn">SUM</span>(<span class="tbl">p</span>.monto), <span class="num">0</span>) <span class="kw">AS</span> total
+<span class="kw">FROM</span> <span class="tbl">clientes</span> <span class="tbl">c</span>
+<span class="kw">LEFT JOIN</span> <span class="tbl">pedidos</span> <span class="tbl">p</span>
+  <span class="kw">ON</span> <span class="tbl">c</span>.id = <span class="tbl">p</span>.cliente_id
+<span class="kw">GROUP BY</span> <span class="tbl">c</span>.id, <span class="tbl">c</span>.nombre
+<span class="kw">ORDER BY</span> total <span class="kw">DESC</span>;</div>
+      </div>
+
+      <div class="result-label">Resultado → Pedro Vega aparece con 0</div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>nombre</th><th>num_pedidos</th><th>total</th></tr></thead>
+          <tbody>
+            <tr><td class="hi-b">Ana Torres</td><td>2</td><td>1550.00</td></tr>
+            <tr><td class="hi-g">Luis Mora</td><td>2</td><td>85.00</td></tr>
+            <tr><td class="hi-a">Carmen Ríos</td><td>1</td><td>80.00</td></tr>
+            <tr><td class="hi-t">Pedro Vega</td><td>0</td><td>0.00</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="box box-green">
+        <div class="box-icon">💡</div>
+        <div class="box-body">
+          <strong>COALESCE para reemplazar NULL por 0</strong>
+          <code style="font-family:var(--mono);font-size:0.85em">COALESCE(SUM(monto), 0)</code> devuelve el SUM si existe, o 0 si es NULL. Muy útil con LEFT JOIN donde algunos grupos no tienen datos en la tabla derecha.
+        </div>
+      </div>
+    </div>
+
+    <!-- ERRORES -->
+    <span class="section-anchor" id="errores"></span>
+    <div class="section">
+      <h2>Errores comunes</h2>
+
+      <h3>1. Olvidar el ON — producto cartesiano accidental</h3>
+      <div class="compare">
+        <div class="compare-box">
+          <div class="compare-header bad">✗ Sin ON (peligroso)</div>
+          <div class="code-body"><span class="kw">SELECT</span> * <span class="kw">FROM</span> clientes
+<span class="kw">INNER JOIN</span> pedidos;
+<span class="cm">-- Devuelve 4×5 = 20 filas
+-- combinando todo con todo
+-- CROSS JOIN implícito</span></div>
+        </div>
+        <div class="compare-box">
+          <div class="compare-header good">✓ Con ON (correcto)</div>
+          <div class="code-body"><span class="kw">SELECT</span> * <span class="kw">FROM</span> <span class="tbl">clientes</span> <span class="tbl">c</span>
+<span class="kw">INNER JOIN</span> <span class="tbl">pedidos</span> <span class="tbl">p</span>
+  <span class="kw">ON</span> <span class="tbl">c</span>.id = <span class="tbl">p</span>.cliente_id;
+<span class="cm">-- Devuelve solo filas
+-- con coincidencia real ✓</span></div>
+        </div>
+      </div>
+
+      <h3 style="margin-top:1.5rem">2. Columna ambigua sin prefijo de tabla</h3>
+      <div class="compare">
+        <div class="compare-box">
+          <div class="compare-header bad">✗ Ambiguo</div>
+          <div class="code-body"><span class="kw">SELECT</span> nombre, id, monto
+<span class="kw">FROM</span> clientes <span class="tbl">c</span>
+<span class="kw">INNER JOIN</span> pedidos <span class="tbl">p</span>
+  <span class="kw">ON</span> <span class="tbl">c</span>.id = <span class="tbl">p</span>.cliente_id;
+<span class="cm">-- "id" existe en ambas
+-- tablas → ERROR</span></div>
+        </div>
+        <div class="compare-box">
+          <div class="compare-header good">✓ Con prefijo de tabla</div>
+          <div class="code-body"><span class="kw">SELECT</span> <span class="tbl">c</span>.nombre, <span class="tbl">c</span>.id,
+       <span class="tbl">p</span>.monto
+<span class="kw">FROM</span> <span class="tbl">clientes</span> <span class="tbl">c</span>
+<span class="kw">INNER JOIN</span> <span class="tbl">pedidos</span> <span class="tbl">p</span>
+  <span class="kw">ON</span> <span class="tbl">c</span>.id = <span class="tbl">p</span>.cliente_id;
+<span class="cm">-- Prefijo c. y p. para
+-- identificar cada col ✓</span></div>
+        </div>
+      </div>
+
+      <h3 style="margin-top:1.5rem">3. Confundir LEFT JOIN con INNER JOIN</h3>
+      <div class="box box-red">
+        <div class="box-icon">⚠️</div>
+        <div class="box-body">
+          <strong>¿Desaparecen filas en tu resultado?</strong>
+          Si esperabas ver todos los registros de una tabla y algunos no aparecen, probablemente estás usando INNER JOIN cuando necesitas LEFT JOIN. INNER JOIN descarta silenciosamente las filas sin coincidencia — cambialo a LEFT JOIN y aparecerán con NULL donde no hay datos.
+        </div>
+      </div>
+    </div>
+
+    <hr>
+
+    <!-- RESUMEN -->
+    <span class="section-anchor" id="resumen"></span>
+    <div class="section">
+      <h2>Resumen: JOIN completo</h2>
+
+      <div class="code-block">
+        <div class="code-header"><span class="code-label">Reporte completo: todos los clientes con sus compras</span></div>
+        <div class="code-body"><span class="cm">-- Todos los clientes, con o sin pedidos,
+-- total comprado, ordenados de mayor a menor</span>
+<span class="kw">SELECT</span>
+  <span class="tbl">c</span>.nombre                     <span class="kw">AS</span> cliente,
+  <span class="tbl">c</span>.ciudad,
+  <span class="fn">COUNT</span>(<span class="tbl">p</span>.id)               <span class="kw">AS</span> num_pedidos,
+  <span class="fn">COALESCE</span>(<span class="fn">SUM</span>(<span class="tbl">p</span>.monto), <span class="num">0</span>) <span class="kw">AS</span> total_comprado,
+  <span class="fn">COALESCE</span>(<span class="fn">MAX</span>(<span class="tbl">p</span>.monto), <span class="num">0</span>) <span class="kw">AS</span> compra_mayor
+<span class="kw">FROM</span> <span class="tbl">clientes</span> <span class="tbl">c</span>
+<span class="kw">LEFT JOIN</span> <span class="tbl">pedidos</span> <span class="tbl">p</span>
+  <span class="kw">ON</span> <span class="tbl">c</span>.id = <span class="tbl">p</span>.cliente_id
+<span class="kw">GROUP BY</span> <span class="tbl">c</span>.id, <span class="tbl">c</span>.nombre, <span class="tbl">c</span>.ciudad
+<span class="kw">ORDER BY</span> total_comprado <span class="kw">DESC</span>;</div>
+      </div>
+
+      <div class="result-label">Resultado →</div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>cliente</th><th>ciudad</th><th>num_pedidos</th><th>total_comprado</th><th>compra_mayor</th></tr></thead>
+          <tbody>
+            <tr><td class="hi-b">Ana Torres</td><td>Quito</td><td>2</td><td>1550.00</td><td>1200.00</td></tr>
+            <tr><td class="hi-g">Luis Mora</td><td>Guayaquil</td><td>2</td><td>85.00</td><td>60.00</td></tr>
+            <tr><td class="hi-a">Carmen Ríos</td><td>Cuenca</td><td>1</td><td>80.00</td><td>80.00</td></tr>
+            <tr><td class="hi-t">Pedro Vega</td><td>Quito</td><td>0</td><td>0.00</td><td>0.00</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3 style="margin-top:1.75rem">Lo que aprendiste</h3>
+      <ul class="checklist">
+        <li>JOIN combina filas de dos o más tablas usando una columna en común (ON)</li>
+        <li>INNER JOIN devuelve solo filas con coincidencia en ambas tablas</li>
+        <li>LEFT JOIN devuelve todas las filas de la tabla izquierda, con NULL donde no hay coincidencia</li>
+        <li>RIGHT JOIN devuelve todas las filas de la derecha — casi siempre reemplazable por LEFT JOIN</li>
+        <li>Los alias (c, p) hacen el código más limpio y son necesarios cuando hay columnas con el mismo nombre</li>
+        <li>Siempre usá prefijo de tabla (c.nombre, p.monto) para evitar columnas ambiguas</li>
+        <li>LEFT JOIN + WHERE IS NULL encuentra filas sin coincidencia en la otra tabla</li>
+        <li>JOIN + GROUP BY + funciones de agregado es la combinación más potente para reportes</li>
+        <li>COALESCE reemplaza NULL por un valor por defecto en resultados de LEFT JOIN</li>
+      </ul>
+    </div>
+
+  </article>
+</div>
+
+<footer>
+  <div>Guía de MySQL · <strong>JOIN</strong></div>
+  <div>Desarrollado por <strong>Darwin Chamba</strong> · Desarrollador Fullstack</div>
+</footer>
+
+<script>
+  const links   = document.querySelectorAll('.aside-links a');
+  const anchors = document.querySelectorAll('.section-anchor');
+  window.addEventListener('scroll', () => {
+    let current = '';
+    anchors.forEach(a => {
+      if (window.scrollY >= a.offsetTop - 70) current = a.id;
+    });
+    links.forEach(a => a.classList.toggle('active', a.getAttribute('href') === '#' + current));
+  }, { passive: true });
+</script>
+</body>
+</html>

@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GROUP BY en MySQL — Guía completa</title>
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;0,700;1,400&family=DM+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../style/style_groupby.css">
+</head>
+<body>
+
+<nav>
+  <div class="nav-logo">mysql &gt; GROUP BY</div>
+  <a class="nav-back" href="index.html">← Volver al índice</a>
+</nav>
+
+<div class="page">
+
+  <aside>
+    <div class="aside-title">En esta guía</div>
+    <ul class="aside-links">
+      <li><a href="#intro">¿Qué es GROUP BY?</a></li>
+      <li><a href="#tabla">La tabla ejemplo</a></li>
+      <li><a href="#sintaxis">Sintaxis básica</a></li>
+      <li><a href="#como-funciona">¿Cómo funciona?</a></li>
+      <li><a href="#con-funciones">Con funciones</a></li>
+      <li><a href="#multiples">Múltiples columnas</a></li>
+      <li><a href="#having">HAVING</a></li>
+      <li><a href="#where-vs-having">WHERE vs HAVING</a></li>
+      <li><a href="#order">GROUP BY + ORDER</a></li>
+      <li><a href="#errores">Errores comunes</a></li>
+      <li><a href="#resumen">Resumen</a></li>
+    </ul>
+  </aside>
+
+  <article>
+
+    <!-- HERO -->
+    <div class="hero">
+      <div class="hero-tag">MySQL · Nivel intermedio</div>
+      <h1>Dominando el <em>GROUP BY</em><br>en MySQL</h1>
+      <p class="hero-lead">Las funciones de agregado calculan sobre todas las filas. GROUP BY las divide en grupos para calcular por separado: total por ciudad, promedio por vendedor, conteo por categoría.</p>
+    </div>
+
+    <!-- ¿QUÉ ES? -->
+    <span class="section-anchor" id="intro"></span>
+    <div class="section">
+      <h2>¿Qué es GROUP BY?</h2>
+      <p>GROUP BY agrupa las filas que tienen el mismo valor en una o varias columnas, y luego aplica funciones de agregado (COUNT, SUM, AVG, MAX, MIN) a cada grupo por separado.</p>
+
+      <div class="box box-amber">
+        <div class="box-icon">📦</div>
+        <div class="box-body">
+          <strong>Analogía de las cajas de correo</strong>
+          Imagina que tenés 100 cartas mezcladas. GROUP BY es como el cartero que las separa por barrio antes de repartirlas: primero las agrupa (Quito, Guayaquil, Cuenca), y luego conta cuántas hay en cada grupo. Sin agrupar, solo podrías contar el total de todas.
+        </div>
+      </div>
+
+      <p>Sin GROUP BY, las funciones de agregado devuelven un único resultado para toda la tabla. Con GROUP BY, devuelven un resultado por cada grupo.</p>
+    </div>
+
+    <!-- TABLA -->
+    <span class="section-anchor" id="tabla"></span>
+    <div class="section">
+      <h2>La tabla que usaremos</h2>
+      <p>Trabajaremos con la tabla <code style="font-family:var(--mono);font-size:0.83em;background:#f5f2ed;padding:2px 6px;border-radius:4px">ventas</code>:</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>id</th><th>vendedor</th><th>ciudad</th><th>producto</th><th>monto</th><th>activo</th></tr></thead>
+          <tbody>
+            <tr class="g1"><td>1</td><td>Ana Torres</td><td>Quito</td><td>Laptop</td><td>1200.00</td><td>1</td></tr>
+            <tr class="g2"><td>2</td><td>Luis Mora</td><td>Guayaquil</td><td>Mouse</td><td>25.00</td><td>1</td></tr>
+            <tr class="g1"><td>3</td><td>Ana Torres</td><td>Quito</td><td>Monitor</td><td>350.00</td><td>1</td></tr>
+            <tr class="g3"><td>4</td><td>Carmen Ríos</td><td>Cuenca</td><td>Teclado</td><td>80.00</td><td>0</td></tr>
+            <tr class="g2"><td>5</td><td>Luis Mora</td><td>Guayaquil</td><td>Laptop</td><td>1150.00</td><td>1</td></tr>
+            <tr class="g3"><td>6</td><td>Carmen Ríos</td><td>Cuenca</td><td>Auriculares</td><td>95.00</td><td>1</td></tr>
+            <tr class="g1"><td>7</td><td>Ana Torres</td><td>Quito</td><td>Webcam</td><td>60.00</td><td>1</td></tr>
+            <tr class="g2"><td>8</td><td>Luis Mora</td><td>Guayaquil</td><td>Monitor</td><td>320.00</td><td>1</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>Los colores muestran cómo GROUP BY por <code style="font-family:var(--mono);font-size:0.83em;background:#f5f2ed;padding:2px 6px;border-radius:4px">vendedor</code> separaría las filas: <span class="tag">Ana Torres</span> · <span class="tag-blue">Luis Mora</span> · <span class="tag-purple">Carmen Ríos</span></p>
+    </div>
+
+    <!-- SINTAXIS -->
+    <span class="section-anchor" id="sintaxis"></span>
+    <div class="section">
+      <h2>Sintaxis básica</h2>
+
+      <div class="anatomy">
+        <div class="anatomy-row">
+          <div class="anatomy-kw">SELECT</div>
+          <div class="anatomy-desc"><strong>Columna(s) agrupadas</strong> + funciones de agregado. Solo podés seleccionar columnas que estén en GROUP BY o dentro de una función.</div>
+        </div>
+        <div class="anatomy-row">
+          <div class="anatomy-kw">FROM</div>
+          <div class="anatomy-desc"><strong>La tabla</strong> de donde vienen los datos.</div>
+        </div>
+        <div class="anatomy-row">
+          <div class="anatomy-kw">WHERE</div>
+          <div class="anatomy-desc"><strong>Filtro de filas</strong> (opcional) — se aplica ANTES de agrupar.</div>
+        </div>
+        <div class="anatomy-row">
+          <div class="anatomy-kw">GROUP BY</div>
+          <div class="anatomy-desc"><strong>Columna por la que agrupar.</strong> Cada valor único genera una fila de resultado.</div>
+        </div>
+        <div class="anatomy-row">
+          <div class="anatomy-kw">HAVING</div>
+          <div class="anatomy-desc"><strong>Filtro de grupos</strong> (opcional) — se aplica DESPUÉS de agrupar.</div>
+        </div>
+        <div class="anatomy-row">
+          <div class="anatomy-kw">ORDER BY</div>
+          <div class="anatomy-desc"><strong>Ordenar el resultado</strong> (opcional).</div>
+        </div>
+      </div>
+
+      <div class="code-block">
+        <div class="code-header"><span class="code-label">Contar ventas por vendedor</span></div>
+        <div class="code-body"><span class="kw">SELECT</span> vendedor, <span class="fn">COUNT</span>(*) <span class="kw">AS</span> total_ventas
+<span class="kw">FROM</span> ventas
+<span class="kw">GROUP BY</span> vendedor;</div>
+      </div>
+
+      <div class="result-label">Resultado →</div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>vendedor</th><th>total_ventas</th></tr></thead>
+          <tbody>
+            <tr><td class="hi">Ana Torres</td><td>3</td></tr>
+            <tr><td class="hi-b">Luis Mora</td><td>3</td></tr>
+            <tr><td class="hi-p">Carmen Ríos</td><td>2</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="box box-accent">
+        <div class="box-icon">💡</div>
+        <div class="box-body">
+          <strong>8 filas → 3 filas</strong>
+          GROUP BY condensó las 8 filas originales en 3 — una por cada vendedor único. La función COUNT(*) contó cuántas filas había en cada grupo.
+        </div>
+      </div>
+    </div>
+
+    <!-- ¿CÓMO FUNCIONA? -->
+    <span class="section-anchor" id="como-funciona"></span>
+    <div class="section">
+      <h2>¿Cómo funciona internamente?</h2>
+      <p>MySQL ejecuta la consulta en etapas. Entender el orden te ayuda a saber dónde va cada cláusula y por qué.</p>
+
+      <div class="flow">
+        <div class="flow-step">
+          <div class="flow-step-num">01</div>
+          <div class="flow-step-name">FROM</div>
+          <div class="flow-step-desc">Carga la tabla</div>
+        </div>
+        <div class="flow-step">
+          <div class="flow-step-num">02</div>
+          <div class="flow-step-name">WHERE</div>
+          <div class="flow-step-desc">Filtra filas</div>
+        </div>
+        <div class="flow-step active">
+          <div class="flow-step-num">03</div>
+          <div class="flow-step-name">GROUP BY</div>
+          <div class="flow-step-desc">Agrupa filas</div>
+        </div>
+        <div class="flow-step active">
+          <div class="flow-step-num">04</div>
+          <div class="flow-step-name">HAVING</div>
+          <div class="flow-step-desc">Filtra grupos</div>
+        </div>
+        <div class="flow-step">
+          <div class="flow-step-num">05</div>
+          <div class="flow-step-name">SELECT</div>
+          <div class="flow-step-desc">Elige columnas</div>
+        </div>
+        <div class="flow-step">
+          <div class="flow-step-num">06</div>
+          <div class="flow-step-name">ORDER BY</div>
+          <div class="flow-step-desc">Ordena resultado</div>
+        </div>
+      </div>
+
+      <div class="box box-blue">
+        <div class="box-icon">🔑</div>
+        <div class="box-body">
+          <strong>La regla más importante de GROUP BY</strong>
+          En el SELECT solo podés poner columnas que estén en el GROUP BY, o columnas dentro de una función de agregado. Todo lo demás genera un error o resultados impredecibles.
+        </div>
+      </div>
+
+      <div class="compare">
+        <div class="compare-box">
+          <div class="compare-header bad">✗ Error — columna no agrupada</div>
+          <div class="code-body"><span class="kw">SELECT</span> vendedor, producto,
+       <span class="fn">COUNT</span>(*)
+<span class="kw">FROM</span> ventas
+<span class="kw">GROUP BY</span> vendedor;
+<span class="cm">-- "producto" no está en
+-- GROUP BY ni en una función</span></div>
+        </div>
+        <div class="compare-box">
+          <div class="compare-header good">✓ Correcto</div>
+          <div class="code-body"><span class="kw">SELECT</span> vendedor,
+       <span class="fn">COUNT</span>(*) <span class="kw">AS</span> ventas
+<span class="kw">FROM</span> ventas
+<span class="kw">GROUP BY</span> vendedor;
+<span class="cm">-- Solo "vendedor" (en GROUP BY)
+-- y COUNT (función de agregado)</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CON FUNCIONES -->
+    <span class="section-anchor" id="con-funciones"></span>
+    <div class="section">
+      <h2>GROUP BY con funciones de agregado</h2>
+      <p>La potencia de GROUP BY aparece al combinarlo con SUM, AVG, MAX, MIN y COUNT para obtener estadísticas por grupo.</p>
+
+      <div class="code-block">
+        <div class="code-header"><span class="code-label">Total vendido por ciudad</span></div>
+        <div class="code-body"><span class="kw">SELECT</span>
+  ciudad,
+  <span class="fn">COUNT</span>(*)             <span class="kw">AS</span> num_ventas,
+  <span class="fn">SUM</span>(monto)           <span class="kw">AS</span> total,
+  <span class="fn">ROUND</span>(<span class="fn">AVG</span>(monto), <span class="num">2</span>) <span class="kw">AS</span> promedio,
+  <span class="fn">MAX</span>(monto)           <span class="kw">AS</span> mayor_venta
+<span class="kw">FROM</span> ventas
+<span class="kw">GROUP BY</span> ciudad;</div>
+      </div>
+
+      <div class="result-label">Resultado →</div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>ciudad</th><th>num_ventas</th><th>total</th><th>promedio</th><th>mayor_venta</th></tr></thead>
+          <tbody>
+            <tr><td class="hi">Quito</td><td>3</td><td>1610.00</td><td>536.67</td><td>1200.00</td></tr>
+            <tr><td class="hi-b">Guayaquil</td><td>3</td><td>1495.00</td><td>498.33</td><td>1150.00</td></tr>
+            <tr><td class="hi-p">Cuenca</td><td>2</td><td>175.00</td><td>87.50</td><td>95.00</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="code-block">
+        <div class="code-header"><span class="code-label">Estadísticas por vendedor</span></div>
+        <div class="code-body"><span class="kw">SELECT</span>
+  vendedor,
+  <span class="fn">COUNT</span>(*)             <span class="kw">AS</span> ventas,
+  <span class="fn">SUM</span>(monto)           <span class="kw">AS</span> total_vendido,
+  <span class="fn">ROUND</span>(<span class="fn">AVG</span>(monto), <span class="num">2</span>) <span class="kw">AS</span> promedio,
+  <span class="fn">MAX</span>(monto)           <span class="kw">AS</span> mayor
+<span class="kw">FROM</span> ventas
+<span class="kw">GROUP BY</span> vendedor;</div>
+      </div>
+
+      <div class="result-label">Resultado →</div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>vendedor</th><th>ventas</th><th>total_vendido</th><th>promedio</th><th>mayor</th></tr></thead>
+          <tbody>
+            <tr><td class="hi">Ana Torres</td><td>3</td><td>1610.00</td><td>536.67</td><td>1200.00</td></tr>
+            <tr><td class="hi-b">Luis Mora</td><td>3</td><td>1495.00</td><td>498.33</td><td>1150.00</td></tr>
+            <tr><td class="hi-p">Carmen Ríos</td><td>2</td><td>175.00</td><td>87.50</td><td>95.00</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- MÚLTIPLES COLUMNAS -->
+    <span class="section-anchor" id="multiples"></span>
+    <div class="section">
+      <h2>Agrupar por múltiples columnas</h2>
+      <p>Podés agrupar por más de una columna. En ese caso, cada combinación única de valores forma un grupo separado.</p>
+
+      <div class="box box-amber">
+        <div class="box-icon">📊</div>
+        <div class="box-body">
+          <strong>Analogía de la tabla dinámica</strong>
+          Es como una tabla dinámica de Excel con filas y columnas. Si agrupás por vendedor y ciudad a la vez, obtenés una fila para "Ana Torres en Quito", otra para "Luis Mora en Guayaquil", etc. Cada combinación única es un grupo.
+        </div>
+      </div>
+
+      <div class="code-block">
+        <div class="code-header"><span class="code-label">Ventas por vendedor y ciudad</span></div>
+        <div class="code-body"><span class="kw">SELECT</span>
+  vendedor,
+  ciudad,
+  <span class="fn">COUNT</span>(*) <span class="kw">AS</span> ventas,
+  <span class="fn">SUM</span>(monto) <span class="kw">AS</span> total
+<span class="kw">FROM</span> ventas
+<span class="kw">GROUP BY</span> vendedor, ciudad;</div>
+      </div>
+
+      <div class="result-label">Resultado →</div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>vendedor</th><th>ciudad</th><th>ventas</th><th>total</th></tr></thead>
+          <tbody>
+            <tr><td class="hi">Ana Torres</td><td>Quito</td><td>3</td><td>1610.00</td></tr>
+            <tr><td class="hi-b">Luis Mora</td><td>Guayaquil</td><td>3</td><td>1495.00</td></tr>
+            <tr><td class="hi-p">Carmen Ríos</td><td>Cuenca</td><td>2</td><td>175.00</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <hr>
+
+    <!-- HAVING -->
+    <span class="section-anchor" id="having"></span>
+    <div class="section">
+      <h2>Filtrar grupos con HAVING</h2>
+      <p>HAVING es el WHERE de los grupos. Permite filtrar el resultado después de que GROUP BY ya agrupó las filas. Solo podés usar HAVING con funciones de agregado o columnas que estén en GROUP BY.</p>
+
+      <div class="box box-amber">
+        <div class="box-icon">🎯</div>
+        <div class="box-body">
+          <strong>Analogía del filtro de calidad</strong>
+          Imagina que fabricás cajas de manzanas. GROUP BY separa las manzanas por tamaño (pequeño, mediano, grande). HAVING es el control de calidad al final: "solo me quedan las cajas que tienen más de 10 manzanas". El filtro se aplica sobre los grupos ya formados, no sobre las manzanas individuales.
+        </div>
+      </div>
+
+      <div class="code-block">
+        <div class="code-header"><span class="code-label">Solo ciudades con más de 2 ventas</span></div>
+        <div class="code-body"><span class="kw">SELECT</span> ciudad, <span class="fn">COUNT</span>(*) <span class="kw">AS</span> total_ventas
+<span class="kw">FROM</span> ventas
+<span class="kw">GROUP BY</span> ciudad
+<span class="kw">HAVING</span> <span class="fn">COUNT</span>(*) > <span class="num">2</span>;</div>
+      </div>
+
+      <div class="result-label">Resultado → (Cuenca queda excluida porque solo tiene 2 ventas)</div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>ciudad</th><th>total_ventas</th></tr></thead>
+          <tbody>
+            <tr><td class="hi">Quito</td><td>3</td></tr>
+            <tr><td class="hi-b">Guayaquil</td><td>3</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="code-block">
+        <div class="code-header"><span class="code-label">Vendedores con total vendido mayor a $1000</span></div>
+        <div class="code-body"><span class="kw">SELECT</span>
+  vendedor,
+  <span class="fn">SUM</span>(monto) <span class="kw">AS</span> total
+<span class="kw">FROM</span> ventas
+<span class="kw">GROUP BY</span> vendedor
+<span class="kw">HAVING</span> <span class="fn">SUM</span>(monto) > <span class="num">1000</span>;</div>
+      </div>
+
+      <div class="result-label">Resultado →</div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>vendedor</th><th>total</th></tr></thead>
+          <tbody>
+            <tr><td class="hi">Ana Torres</td><td>1610.00</td></tr>
+            <tr><td class="hi-b">Luis Mora</td><td>1495.00</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- WHERE VS HAVING -->
+    <span class="section-anchor" id="where-vs-having"></span>
+    <div class="section">
+      <h2>WHERE vs HAVING — la diferencia clave</h2>
+      <p>Es la duda más común con GROUP BY. La regla es simple: <strong>WHERE filtra filas antes de agrupar, HAVING filtra grupos después de agrupar.</strong></p>
+
+      <div class="compare">
+        <div class="compare-box">
+          <div class="compare-header where">WHERE — filtra filas (antes)</div>
+          <div class="code-body"><span class="kw">SELECT</span> ciudad, <span class="fn">COUNT</span>(*)
+<span class="kw">FROM</span> ventas
+<span class="kw">WHERE</span> activo = <span class="num">1</span>
+<span class="kw">GROUP BY</span> ciudad;
+
+<span class="cm">-- Primero descarta filas
+-- donde activo = 0,
+-- luego agrupa el resto</span></div>
+        </div>
+        <div class="compare-box">
+          <div class="compare-header having">HAVING — filtra grupos (después)</div>
+          <div class="code-body"><span class="kw">SELECT</span> ciudad, <span class="fn">COUNT</span>(*)
+<span class="kw">FROM</span> ventas
+<span class="kw">GROUP BY</span> ciudad
+<span class="kw">HAVING</span> <span class="fn">COUNT</span>(*) > <span class="num">2</span>;
+
+<span class="cm">-- Primero agrupa todas
+-- las filas, luego descarta
+-- grupos con 2 o menos</span></div>
+        </div>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th></th><th>WHERE</th><th>HAVING</th></tr></thead>
+          <tbody>
+            <tr><td><strong>¿Qué filtra?</strong></td><td>Filas individuales</td><td>Grupos ya formados</td></tr>
+            <tr><td><strong>¿Cuándo se aplica?</strong></td><td>Antes de GROUP BY</td><td>Después de GROUP BY</td></tr>
+            <tr><td><strong>¿Con funciones?</strong></td><td><span class="tag-red">No puede</span></td><td><span class="tag">Sí puede</span></td></tr>
+            <tr><td><strong>Ejemplo</strong></td><td><code style="font-family:var(--mono);font-size:0.78em">WHERE activo = 1</code></td><td><code style="font-family:var(--mono);font-size:0.78em">HAVING COUNT(*) &gt; 2</code></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="code-block">
+        <div class="code-header"><span class="code-label">Usando WHERE y HAVING juntos</span></div>
+        <div class="code-body"><span class="cm">-- Solo ventas activas (WHERE filtra filas)
+-- Solo ciudades con total > 1000 (HAVING filtra grupos)</span>
+<span class="kw">SELECT</span>
+  ciudad,
+  <span class="fn">COUNT</span>(*) <span class="kw">AS</span> ventas,
+  <span class="fn">SUM</span>(monto) <span class="kw">AS</span> total
+<span class="kw">FROM</span> ventas
+<span class="kw">WHERE</span> activo = <span class="num">1</span>
+<span class="kw">GROUP BY</span> ciudad
+<span class="kw">HAVING</span> <span class="fn">SUM</span>(monto) > <span class="num">1000</span>;</div>
+      </div>
+
+      <div class="result-label">Resultado →</div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>ciudad</th><th>ventas</th><th>total</th></tr></thead>
+          <tbody>
+            <tr><td class="hi">Quito</td><td>3</td><td>1610.00</td></tr>
+            <tr><td class="hi-b">Guayaquil</td><td>3</td><td>1495.00</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ORDER BY -->
+    <span class="section-anchor" id="order"></span>
+    <div class="section">
+      <h2>GROUP BY + ORDER BY</h2>
+      <p>Podés ordenar los grupos resultantes con ORDER BY. Se puede ordenar por cualquier columna del SELECT, incluyendo las funciones de agregado.</p>
+
+      <div class="code-block">
+        <div class="code-header"><span class="code-label">Ranking de vendedores por total vendido</span></div>
+        <div class="code-body"><span class="kw">SELECT</span>
+  vendedor,
+  <span class="fn">COUNT</span>(*)    <span class="kw">AS</span> num_ventas,
+  <span class="fn">SUM</span>(monto)  <span class="kw">AS</span> total
+<span class="kw">FROM</span> ventas
+<span class="kw">GROUP BY</span> vendedor
+<span class="kw">ORDER BY</span> total <span class="kw">DESC</span>;</div>
+      </div>
+
+      <div class="result-label">Resultado → ordenado de mayor a menor total</div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>#</th><th>vendedor</th><th>num_ventas</th><th>total</th></tr></thead>
+          <tbody>
+            <tr><td>🥇</td><td class="hi">Ana Torres</td><td>3</td><td>1610.00</td></tr>
+            <tr><td>🥈</td><td class="hi-b">Luis Mora</td><td>3</td><td>1495.00</td></tr>
+            <tr><td>🥉</td><td class="hi-p">Carmen Ríos</td><td>2</td><td>175.00</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ERRORES -->
+    <span class="section-anchor" id="errores"></span>
+    <div class="section">
+      <h2>Errores comunes</h2>
+
+      <h3>1. Seleccionar columna que no está en GROUP BY</h3>
+      <div class="compare">
+        <div class="compare-box">
+          <div class="compare-header bad">✗ Error</div>
+          <div class="code-body"><span class="kw">SELECT</span> vendedor,
+       ciudad,
+       <span class="fn">COUNT</span>(*)
+<span class="kw">FROM</span> ventas
+<span class="kw">GROUP BY</span> vendedor;
+<span class="cm">-- "ciudad" no está en
+-- GROUP BY ni en función</span></div>
+        </div>
+        <div class="compare-box">
+          <div class="compare-header good">✓ Correcto</div>
+          <div class="code-body"><span class="kw">SELECT</span> vendedor,
+       ciudad,
+       <span class="fn">COUNT</span>(*)
+<span class="kw">FROM</span> ventas
+<span class="kw">GROUP BY</span> vendedor, ciudad;
+<span class="cm">-- Ambas columnas están
+-- en GROUP BY ✓</span></div>
+        </div>
+      </div>
+
+      <h3 style="margin-top:1.5rem">2. Usar función de agregado en WHERE</h3>
+      <div class="compare">
+        <div class="compare-box">
+          <div class="compare-header bad">✗ Error</div>
+          <div class="code-body"><span class="kw">SELECT</span> ciudad, <span class="fn">COUNT</span>(*)
+<span class="kw">FROM</span> ventas
+<span class="kw">WHERE</span> <span class="fn">COUNT</span>(*) > <span class="num">2</span>
+<span class="kw">GROUP BY</span> ciudad;
+<span class="cm">-- WHERE no puede usar
+-- funciones de agregado</span></div>
+        </div>
+        <div class="compare-box">
+          <div class="compare-header good">✓ Correcto</div>
+          <div class="code-body"><span class="kw">SELECT</span> ciudad, <span class="fn">COUNT</span>(*)
+<span class="kw">FROM</span> ventas
+<span class="kw">GROUP BY</span> ciudad
+<span class="kw">HAVING</span> <span class="fn">COUNT</span>(*) > <span class="num">2</span>;
+<span class="cm">-- HAVING es para filtrar
+-- con funciones ✓</span></div>
+        </div>
+      </div>
+
+      <h3 style="margin-top:1.5rem">3. Poner HAVING antes de GROUP BY</h3>
+      <div class="compare">
+        <div class="compare-box">
+          <div class="compare-header bad">✗ Error de orden</div>
+          <div class="code-body"><span class="kw">SELECT</span> ciudad, <span class="fn">COUNT</span>(*)
+<span class="kw">FROM</span> ventas
+<span class="kw">HAVING</span> <span class="fn">COUNT</span>(*) > <span class="num">2</span>
+<span class="kw">GROUP BY</span> ciudad;
+<span class="cm">-- HAVING siempre va
+-- después de GROUP BY</span></div>
+        </div>
+        <div class="compare-box">
+          <div class="compare-header good">✓ Orden correcto</div>
+          <div class="code-body"><span class="kw">SELECT</span> ciudad, <span class="fn">COUNT</span>(*)
+<span class="kw">FROM</span> ventas
+<span class="kw">GROUP BY</span> ciudad
+<span class="kw">HAVING</span> <span class="fn">COUNT</span>(*) > <span class="num">2</span>;
+<span class="cm">-- GROUP BY → HAVING ✓</span></div>
+        </div>
+      </div>
+    </div>
+
+    <hr>
+
+    <!-- RESUMEN -->
+    <span class="section-anchor" id="resumen"></span>
+    <div class="section">
+      <h2>Resumen: GROUP BY completo</h2>
+
+      <div class="code-block">
+        <div class="code-header"><span class="code-label">Todo junto — reporte completo de ventas activas</span></div>
+        <div class="code-body"><span class="cm">-- Reporte: vendedores activos con más de 1 venta,
+-- ordenados por total de mayor a menor</span>
+<span class="kw">SELECT</span>
+  vendedor,
+  ciudad,
+  <span class="fn">COUNT</span>(*)             <span class="kw">AS</span> num_ventas,
+  <span class="fn">ROUND</span>(<span class="fn">SUM</span>(monto), <span class="num">2</span>) <span class="kw">AS</span> total_vendido,
+  <span class="fn">ROUND</span>(<span class="fn">AVG</span>(monto), <span class="num">2</span>) <span class="kw">AS</span> promedio,
+  <span class="fn">MAX</span>(monto)           <span class="kw">AS</span> mayor_venta
+<span class="kw">FROM</span> ventas
+<span class="kw">WHERE</span> activo = <span class="num">1</span>
+<span class="kw">GROUP BY</span> vendedor, ciudad
+<span class="kw">HAVING</span> <span class="fn">COUNT</span>(*) > <span class="num">1</span>
+<span class="kw">ORDER BY</span> total_vendido <span class="kw">DESC</span>;</div>
+      </div>
+
+      <div class="result-label">Resultado →</div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>vendedor</th><th>ciudad</th><th>num_ventas</th><th>total_vendido</th><th>promedio</th><th>mayor_venta</th></tr></thead>
+          <tbody>
+            <tr><td class="hi">Ana Torres</td><td>Quito</td><td>3</td><td>1610.00</td><td>536.67</td><td>1200.00</td></tr>
+            <tr><td class="hi-b">Luis Mora</td><td>Guayaquil</td><td>3</td><td>1495.00</td><td>498.33</td><td>1150.00</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3 style="margin-top:1.75rem">Lo que aprendiste</h3>
+      <ul class="checklist">
+        <li>GROUP BY agrupa filas con el mismo valor y aplica funciones de agregado por grupo</li>
+        <li>Solo podés poner en SELECT columnas que estén en GROUP BY o dentro de una función</li>
+        <li>Podés agrupar por varias columnas: cada combinación única forma un grupo</li>
+        <li>WHERE filtra filas antes de agrupar — no puede usar funciones de agregado</li>
+        <li>HAVING filtra grupos después de agrupar — sí puede usar funciones de agregado</li>
+        <li>ORDER BY ordena el resultado final y puede usar columnas con alias</li>
+        <li>El orden correcto es: FROM → WHERE → GROUP BY → HAVING → SELECT → ORDER BY</li>
+        <li>GROUP BY + SUM/COUNT/AVG/MAX/MIN es la combinación más potente para reportes</li>
+      </ul>
+    </div>
+
+  </article>
+</div>
+
+<footer>
+  <div>Guía de MySQL · <strong>GROUP BY</strong></div>
+  <div>Desarrollado por <strong>Darwin Chamba</strong> · Desarrollador Fullstack</div>
+</footer>
+
+<script>
+  const links   = document.querySelectorAll('.aside-links a');
+  const anchors = document.querySelectorAll('.section-anchor');
+  window.addEventListener('scroll', () => {
+    let current = '';
+    anchors.forEach(a => {
+      if (window.scrollY >= a.offsetTop - 70) current = a.id;
+    });
+    links.forEach(a => a.classList.toggle('active', a.getAttribute('href') === '#' + current));
+  }, { passive: true });
+</script>
+</body>
+</html>

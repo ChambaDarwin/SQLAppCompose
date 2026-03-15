@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Funciones en MySQL — Guía completa</title>
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;0,700;1,400&family=DM+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../style/style_funciones.css">
+</head>
+<body>
+
+<nav>
+  <div class="nav-logo">mysql &gt; Funciones</div>
+  <a class="nav-back" href="index.html">← Volver al índice</a>
+</nav>
+
+<div class="page">
+
+  <aside>
+    <div class="aside-title">En esta guía</div>
+    <ul class="aside-links">
+      <li><a href="#intro">¿Qué son?</a></li>
+      <li><a href="#tabla">La tabla ejemplo</a></li>
+      <li><a href="#count">COUNT()</a></li>
+      <li><a href="#sum">SUM()</a></li>
+      <li><a href="#avg">AVG()</a></li>
+      <li><a href="#max-min">MAX() y MIN()</a></li>
+      <li><a href="#combinadas">Combinadas</a></li>
+      <li><a href="#con-where">Con WHERE</a></li>
+      <li><a href="#alias">Alias con AS</a></li>
+      <li><a href="#nulos">NULLs y funciones</a></li>
+      <li><a href="#otras">Otras funciones</a></li>
+      <li><a href="#resumen">Resumen</a></li>
+    </ul>
+  </aside>
+
+  <article>
+
+    <!-- HERO -->
+    <div class="hero">
+      <div class="hero-tag">MySQL · Nivel básico</div>
+      <h1>Funciones de <em>agregado</em><br>en MySQL</h1>
+      <p class="hero-lead">Con SELECT puedes leer filas, pero ¿cómo calculas el total, el promedio o el máximo de un conjunto de datos? Para eso existen las funciones de agregado: COUNT, SUM, AVG, MAX y MIN.</p>
+    </div>
+
+    <!-- ¿QUÉ SON? -->
+    <span class="section-anchor" id="intro"></span>
+    <div class="section">
+      <h2>¿Qué son las funciones de agregado?</h2>
+      <p>Las funciones de agregado toman <strong>múltiples filas</strong> y las condensan en <strong>un solo valor</strong>. En lugar de devolver fila por fila, calculan un resultado sobre todo el conjunto.</p>
+
+      <div class="box box-amber">
+        <div class="box-icon">🧮</div>
+        <div class="box-body">
+          <strong>Analogía de la hoja de cálculo</strong>
+          Imagina una hoja de Excel con 1000 filas de ventas. En vez de leerlas una a una, usás una fórmula: =SUMA(ventas), =PROMEDIO(ventas), =MAX(ventas). Las funciones de agregado en MySQL son exactamente esas fórmulas, pero dentro de una consulta SQL.
+        </div>
+      </div>
+
+      <p>Las cinco funciones principales son:</p>
+
+      <div class="fn-grid">
+        <div class="fn-card">
+          <div class="fn-card-name">COUNT()</div>
+          <div class="fn-card-desc">Cuenta cuántas filas existen</div>
+        </div>
+        <div class="fn-card green">
+          <div class="fn-card-name">SUM()</div>
+          <div class="fn-card-desc">Suma todos los valores</div>
+        </div>
+        <div class="fn-card amber">
+          <div class="fn-card-name">AVG()</div>
+          <div class="fn-card-desc">Calcula el promedio</div>
+        </div>
+        <div class="fn-card blue">
+          <div class="fn-card-name">MAX()</div>
+          <div class="fn-card-desc">Devuelve el valor mayor</div>
+        </div>
+        <div class="fn-card teal">
+          <div class="fn-card-name">MIN()</div>
+          <div class="fn-card-desc">Devuelve el valor menor</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TABLA -->
+    <span class="section-anchor" id="tabla"></span>
+    <div class="section">
+      <h2>La tabla que usaremos</h2>
+      <p>Trabajaremos con la tabla <code style="font-family:var(--mono);font-size:0.83em;background:#f5f2ed;padding:2px 6px;border-radius:4px">ventas</code> con registros de transacciones:</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>id</th><th>vendedor</th><th>ciudad</th><th>producto</th><th>monto</th><th>activo</th></tr></thead>
+          <tbody>
+            <tr><td>1</td><td>Ana Torres</td><td>Quito</td><td>Laptop</td><td>1200.00</td><td>1</td></tr>
+            <tr><td>2</td><td>Luis Mora</td><td>Guayaquil</td><td>Mouse</td><td>25.00</td><td>1</td></tr>
+            <tr><td>3</td><td>Ana Torres</td><td>Quito</td><td>Monitor</td><td>350.00</td><td>1</td></tr>
+            <tr><td>4</td><td>Carmen Ríos</td><td>Cuenca</td><td>Teclado</td><td>80.00</td><td>0</td></tr>
+            <tr><td>5</td><td>Luis Mora</td><td>Guayaquil</td><td>Laptop</td><td>1150.00</td><td>1</td></tr>
+            <tr><td>6</td><td>Carmen Ríos</td><td>Cuenca</td><td>Auriculares</td><td>95.00</td><td>1</td></tr>
+            <tr><td>7</td><td>Ana Torres</td><td>Quito</td><td>Webcam</td><td>60.00</td><td>1</td></tr>
+            <tr><td>8</td><td>Luis Mora</td><td>Guayaquil</td><td>Monitor</td><td>320.00</td><td>1</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- COUNT -->
+    <span class="section-anchor" id="count"></span>
+    <div class="section">
+      <h2>COUNT() — Contar filas</h2>
+      <p>COUNT cuenta cuántas filas hay en el resultado. Es una de las funciones más usadas en SQL.</p>
+
+      <div class="box box-amber">
+        <div class="box-icon">🔢</div>
+        <div class="box-body">
+          <strong>Analogía del inventario</strong>
+          COUNT es como contar cuántos productos hay en una bodega. No te dice el precio ni el peso, solo cuántos hay. Una respuesta: un número.
+        </div>
+      </div>
+
+      <div class="anatomy">
+        <div class="anatomy-row">
+          <div class="anatomy-kw">COUNT(*)</div>
+          <div class="anatomy-desc"><strong>Cuenta todas las filas</strong>, incluyendo las que tienen NULL en alguna columna.</div>
+        </div>
+        <div class="anatomy-row">
+          <div class="anatomy-kw">COUNT(col)</div>
+          <div class="anatomy-desc"><strong>Cuenta filas donde esa columna NO es NULL.</strong> Ignora los valores nulos.</div>
+        </div>
+        <div class="anatomy-row">
+          <div class="anatomy-kw">COUNT(DISTINCT)</div>
+          <div class="anatomy-desc"><strong>Cuenta valores únicos</strong> — sin repetidos.</div>
+        </div>
+      </div>
+
+      <div class="code-block">
+        <div class="code-header"><span class="code-label">¿Cuántas ventas hay en total?</span></div>
+        <div class="code-body"><span class="kw">SELECT</span> <span class="fn">COUNT</span>(*) <span class="kw">AS</span> total_ventas
+<span class="kw">FROM</span> ventas;</div>
+      </div>
+
+      <div class="result-label">Resultado →</div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>total_ventas</th></tr></thead>
+          <tbody><tr><td class="hi">8</td></tr></tbody>
+        </table>
+      </div>
+
+      <div class="code-block">
+        <div class="code-header"><span class="code-label">¿Cuántos vendedores distintos hay?</span></div>
+        <div class="code-body"><span class="kw">SELECT</span> <span class="fn">COUNT</span>(<span class="kw">DISTINCT</span> vendedor) <span class="kw">AS</span> vendedores_unicos
+<span class="kw">FROM</span> ventas;</div>
+      </div>
+
+      <div class="result-label">Resultado →</div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>vendedores_unicos</th></tr></thead>
+          <tbody><tr><td class="hi">3</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- SUM -->
+    <span class="section-anchor" id="sum"></span>
+    <div class="section">
+      <h2>SUM() — Sumar valores</h2>
+      <p>SUM suma todos los valores de una columna numérica. Ignora los NULL automáticamente.</p>
+
+      <div class="box box-amber">
+        <div class="box-icon">💰</div>
+        <div class="box-body">
+          <strong>Analogía de la caja registradora</strong>
+          SUM es como sumar todos los tickets de una caja al final del día. No importa cuántos sean, te dice el total acumulado en un solo número.
+        </div>
+      </div>
+
+      <div class="code-block">
+        <div class="code-header"><span class="code-label">¿Cuánto se vendió en total?</span></div>
+        <div class="code-body"><span class="kw">SELECT</span> <span class="fn">SUM</span>(monto) <span class="kw">AS</span> total_vendido
+<span class="kw">FROM</span> ventas;</div>
+      </div>
+
+      <div class="result-label">Resultado →</div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>total_vendido</th></tr></thead>
+          <tbody><tr><td class="hi">3280.00</td></tr></tbody>
+        </table>
+      </div>
+
+      <div class="code-block">
+        <div class="code-header"><span class="code-label">Total vendido solo en Quito</span></div>
+        <div class="code-body"><span class="kw">SELECT</span> <span class="fn">SUM</span>(monto) <span class="kw">AS</span> ventas_quito
+<span class="kw">FROM</span> ventas
+<span class="kw">WHERE</span> ciudad = <span class="str">'Quito'</span>;</div>
+      </div>
+
+      <div class="result-label">Resultado → (1200 + 350 + 60)</div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>ventas_quito</th></tr></thead>
+          <tbody><tr><td class="hi">1610.00</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- AVG -->
+    <span class="section-anchor" id="avg"></span>
+    <div class="section">
+      <h2>AVG() — Calcular el promedio</h2>
+      <p>AVG divide la suma de todos los valores entre la cantidad de filas no nulas. Siempre ignora los NULL al calcular.</p>
+
+      <div class="box box-amber">
+        <div class="box-icon">📊</div>
+        <div class="box-body">
+          <strong>Analogía de las notas escolares</strong>
+          AVG es como calcular tu nota promedio: sumás todas tus calificaciones y las dividís entre la cantidad de materias. MySQL hace ese cálculo automáticamente sobre toda la columna.
+        </div>
+      </div>
+
+      <div class="code-block">
+        <div class="code-header"><span class="code-label">Monto promedio por venta</span></div>
+        <div class="code-body"><span class="kw">SELECT</span> <span class="fn">AVG</span>(monto) <span class="kw">AS</span> promedio_venta
+<span class="kw">FROM</span> ventas;</div>
+      </div>
+
+      <div class="result-label">Resultado → (3280 ÷ 8)</div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>promedio_venta</th></tr></thead>
+          <tbody><tr><td class="hi">410.00</td></tr></tbody>
+        </table>
+      </div>
+
+      <div class="code-block">
+        <div class="code-header"><span class="code-label">Redondear el promedio a 2 decimales</span></div>
+        <div class="code-body"><span class="kw">SELECT</span> <span class="fn">ROUND</span>(<span class="fn">AVG</span>(monto), <span class="num">2</span>) <span class="kw">AS</span> promedio
+<span class="kw">FROM</span> ventas;</div>
+      </div>
+
+      <div class="box box-green">
+        <div class="box-icon">💡</div>
+        <div class="box-body">
+          <strong>AVG ignora los NULL</strong>
+          Si una fila tiene NULL en la columna calculada, AVG no la cuenta ni en la suma ni en el divisor. Esto puede hacer que el promedio sea más alto de lo esperado si hay muchos nulls.
+        </div>
+      </div>
+    </div>
+
+    <!-- MAX Y MIN -->
+    <span class="section-anchor" id="max-min"></span>
+    <div class="section">
+      <h2>MAX() y MIN() — Mayor y menor</h2>
+      <p>MAX devuelve el valor más alto y MIN el más bajo de una columna. Funcionan con números, textos y fechas.</p>
+
+      <div class="box box-amber">
+        <div class="box-icon">🏔️</div>
+        <div class="box-body">
+          <strong>Analogía del termómetro</strong>
+          MAX es la temperatura máxima registrada en el día, MIN es la mínima. No te dan todas las mediciones, solo los extremos. Perfecto para saber el rango de tus datos.
+        </div>
+      </div>
+
+      <div class="code-block">
+        <div class="code-header"><span class="code-label">Venta más alta y más baja</span></div>
+        <div class="code-body"><span class="kw">SELECT</span>
+  <span class="fn">MAX</span>(monto) <span class="kw">AS</span> venta_mayor,
+  <span class="fn">MIN</span>(monto) <span class="kw">AS</span> venta_menor
+<span class="kw">FROM</span> ventas;</div>
+      </div>
+
+      <div class="result-label">Resultado →</div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>venta_mayor</th><th>venta_menor</th></tr></thead>
+          <tbody>
+            <tr><td class="hi">1200.00</td><td class="hi">25.00</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="code-block">
+        <div class="code-header"><span class="code-label">MAX y MIN también funcionan con texto</span></div>
+        <div class="code-body"><span class="cm">-- MAX con texto devuelve el último en orden alfabético</span>
+<span class="kw">SELECT</span>
+  <span class="fn">MAX</span>(vendedor) <span class="kw">AS</span> ultimo_alfabetico,
+  <span class="fn">MIN</span>(vendedor) <span class="kw">AS</span> primero_alfabetico
+<span class="kw">FROM</span> ventas;
+
+<span class="cm">-- Resultado: 'Sofía León' y 'Ana Torres'</span></div>
+      </div>
+    </div>
+
+    <hr>
+
+    <!-- COMBINADAS -->
+    <span class="section-anchor" id="combinadas"></span>
+    <div class="section">
+      <h2>Usar varias funciones juntas</h2>
+      <p>Podés usar todas las funciones que necesites en un mismo SELECT para obtener un resumen completo en una sola consulta.</p>
+
+      <div class="code-block">
+        <div class="code-header"><span class="code-label">Resumen completo de ventas</span></div>
+        <div class="code-body"><span class="kw">SELECT</span>
+  <span class="fn">COUNT</span>(*)           <span class="kw">AS</span> total_registros,
+  <span class="fn">COUNT</span>(<span class="kw">DISTINCT</span> vendedor) <span class="kw">AS</span> vendedores,
+  <span class="fn">SUM</span>(monto)          <span class="kw">AS</span> total_vendido,
+  <span class="fn">AVG</span>(monto)          <span class="kw">AS</span> promedio,
+  <span class="fn">MAX</span>(monto)          <span class="kw">AS</span> mayor_venta,
+  <span class="fn">MIN</span>(monto)          <span class="kw">AS</span> menor_venta
+<span class="kw">FROM</span> ventas;</div>
+      </div>
+
+      <div class="result-label">Resultado →</div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>total_registros</th><th>vendedores</th><th>total_vendido</th><th>promedio</th><th>mayor_venta</th><th>menor_venta</th></tr></thead>
+          <tbody>
+            <tr>
+              <td class="hi">8</td>
+              <td class="hi">3</td>
+              <td class="hi">3280.00</td>
+              <td class="hi">410.00</td>
+              <td class="hi">1200.00</td>
+              <td class="hi">25.00</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- CON WHERE -->
+    <span class="section-anchor" id="con-where"></span>
+    <div class="section">
+      <h2>Funciones con WHERE</h2>
+      <p>WHERE filtra las filas antes de que la función las procese. Así podés calcular estadísticas para subconjuntos específicos de datos.</p>
+
+      <div class="box box-blue">
+        <div class="box-icon">🔬</div>
+        <div class="box-body">
+          <strong>WHERE filtra primero, la función calcula después</strong>
+          El orden de ejecución interno es: FROM → WHERE (filtrar filas) → SELECT (aplicar funciones). La función nunca "ve" las filas que WHERE descartó.
+        </div>
+      </div>
+
+      <div class="code-block">
+        <div class="code-header"><span class="code-label">Estadísticas solo de ventas activas en Quito</span></div>
+        <div class="code-body"><span class="kw">SELECT</span>
+  <span class="fn">COUNT</span>(*)    <span class="kw">AS</span> ventas,
+  <span class="fn">SUM</span>(monto)  <span class="kw">AS</span> total,
+  <span class="fn">AVG</span>(monto)  <span class="kw">AS</span> promedio
+<span class="kw">FROM</span> ventas
+<span class="kw">WHERE</span> ciudad = <span class="str">'Quito'</span>
+  <span class="kw">AND</span> activo = <span class="num">1</span>;</div>
+      </div>
+
+      <div class="result-label">Resultado →</div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>ventas</th><th>total</th><th>promedio</th></tr></thead>
+          <tbody>
+            <tr>
+              <td class="hi">3</td>
+              <td class="hi">1610.00</td>
+              <td class="hi">536.67</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="code-block">
+        <div class="code-header"><span class="code-label">Comparar ventas por ciudad</span></div>
+        <div class="code-body"><span class="cm">-- Quito</span>
+<span class="kw">SELECT</span> <span class="str">'Quito'</span> <span class="kw">AS</span> ciudad, <span class="fn">SUM</span>(monto) <span class="kw">AS</span> total
+<span class="kw">FROM</span> ventas <span class="kw">WHERE</span> ciudad = <span class="str">'Quito'</span>
+
+<span class="kw">UNION ALL</span>
+
+<span class="cm">-- Guayaquil</span>
+<span class="kw">SELECT</span> <span class="str">'Guayaquil'</span>, <span class="fn">SUM</span>(monto)
+<span class="kw">FROM</span> ventas <span class="kw">WHERE</span> ciudad = <span class="str">'Guayaquil'</span>;</div>
+      </div>
+    </div>
+
+    <!-- ALIAS -->
+    <span class="section-anchor" id="alias"></span>
+    <div class="section">
+      <h2>Alias con AS</h2>
+      <p>Por defecto, MySQL nombra las columnas resultado con el nombre de la función (<code style="font-family:var(--mono);font-size:0.83em">COUNT(*)</code>, <code style="font-family:var(--mono);font-size:0.83em">SUM(monto)</code>). Con AS les das nombres legibles.</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Sin AS (feo)</th><th>Con AS (legible)</th></tr></thead>
+          <tbody>
+            <tr><td><span class="tag">COUNT(*)</span></td><td><span class="tag-green">total_ventas</span></td></tr>
+            <tr><td><span class="tag">SUM(monto)</span></td><td><span class="tag-green">ingresos_totales</span></td></tr>
+            <tr><td><span class="tag">AVG(monto)</span></td><td><span class="tag-green">ticket_promedio</span></td></tr>
+            <tr><td><span class="tag">MAX(monto)</span></td><td><span class="tag-green">venta_maxima</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="code-block">
+        <div class="code-header"><span class="code-label">Siempre usá AS con funciones de agregado</span></div>
+        <div class="code-body"><span class="kw">SELECT</span>
+  <span class="fn">COUNT</span>(*)   <span class="kw">AS</span> <span class="str">'Total de ventas'</span>,
+  <span class="fn">SUM</span>(monto) <span class="kw">AS</span> <span class="str">'Ingresos totales'</span>,
+  <span class="fn">AVG</span>(monto) <span class="kw">AS</span> <span class="str">'Ticket promedio'</span>
+<span class="kw">FROM</span> ventas;</div>
+      </div>
+    </div>
+
+    <!-- NULOS -->
+    <span class="section-anchor" id="nulos"></span>
+    <div class="section">
+      <h2>Funciones y valores NULL</h2>
+      <p>Las funciones de agregado tienen un comportamiento especial con NULL. Es importante entenderlo para evitar resultados inesperados.</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Función</th><th>¿Qué hace con NULL?</th></tr></thead>
+          <tbody>
+            <tr><td><span class="tag">COUNT(*)</span></td><td>Los cuenta — incluye filas con NULL</td></tr>
+            <tr><td><span class="tag">COUNT(col)</span></td><td>Los ignora — no cuenta filas donde esa col es NULL</td></tr>
+            <tr><td><span class="tag">SUM(col)</span></td><td>Los ignora — no los suma</td></tr>
+            <tr><td><span class="tag">AVG(col)</span></td><td>Los ignora en suma Y en el conteo del divisor</td></tr>
+            <tr><td><span class="tag">MAX(col)</span></td><td>Los ignora — no los considera</td></tr>
+            <tr><td><span class="tag">MIN(col)</span></td><td>Los ignora — no los considera</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="box box-accent">
+        <div class="box-icon">⚠️</div>
+        <div class="box-body">
+          <strong>COUNT(*) vs COUNT(columna): la diferencia clave</strong>
+          Si tenés 100 filas pero 10 tienen NULL en la columna <code style="font-family:var(--mono);font-size:0.85em">monto</code>: <code style="font-family:var(--mono);font-size:0.85em">COUNT(*)</code> devuelve 100, pero <code style="font-family:var(--mono);font-size:0.85em">COUNT(monto)</code> devuelve 90. Usá COUNT(*) para contar filas, COUNT(col) para contar valores existentes.
+        </div>
+      </div>
+    </div>
+
+    <!-- OTRAS FUNCIONES -->
+    <span class="section-anchor" id="otras"></span>
+    <div class="section">
+      <h2>Otras funciones útiles</h2>
+      <p>Además de las cinco principales, MySQL ofrece funciones para texto, fechas y matemáticas que son muy usadas en el día a día.</p>
+
+      <h3>Funciones matemáticas</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Función</th><th>¿Qué hace?</th><th>Ejemplo</th></tr></thead>
+          <tbody>
+            <tr><td class="fn-name">ROUND(n, d)</td><td>Redondea a d decimales</td><td><code style="font-family:var(--mono);font-size:0.8em">ROUND(410.567, 2) → 410.57</code></td></tr>
+            <tr><td class="fn-name">CEIL(n)</td><td>Redondea hacia arriba</td><td><code style="font-family:var(--mono);font-size:0.8em">CEIL(4.1) → 5</code></td></tr>
+            <tr><td class="fn-name">FLOOR(n)</td><td>Redondea hacia abajo</td><td><code style="font-family:var(--mono);font-size:0.8em">FLOOR(4.9) → 4</code></td></tr>
+            <tr><td class="fn-name">ABS(n)</td><td>Valor absoluto</td><td><code style="font-family:var(--mono);font-size:0.8em">ABS(-150) → 150</code></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3 style="margin-top:1.5rem">Funciones de texto</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Función</th><th>¿Qué hace?</th><th>Ejemplo</th></tr></thead>
+          <tbody>
+            <tr><td class="fn-name">UPPER(s)</td><td>Convierte a mayúsculas</td><td><code style="font-family:var(--mono);font-size:0.8em">UPPER('ana') → 'ANA'</code></td></tr>
+            <tr><td class="fn-name">LOWER(s)</td><td>Convierte a minúsculas</td><td><code style="font-family:var(--mono);font-size:0.8em">LOWER('ANA') → 'ana'</code></td></tr>
+            <tr><td class="fn-name">LENGTH(s)</td><td>Longitud del texto</td><td><code style="font-family:var(--mono);font-size:0.8em">LENGTH('Quito') → 5</code></td></tr>
+            <tr><td class="fn-name">CONCAT(a, b)</td><td>Une textos</td><td><code style="font-family:var(--mono);font-size:0.8em">CONCAT('Ana', ' Torres')</code></td></tr>
+            <tr><td class="fn-name">TRIM(s)</td><td>Elimina espacios</td><td><code style="font-family:var(--mono);font-size:0.8em">TRIM('  hola  ') → 'hola'</code></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3 style="margin-top:1.5rem">Funciones de fecha</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Función</th><th>¿Qué hace?</th><th>Ejemplo</th></tr></thead>
+          <tbody>
+            <tr><td class="fn-name">NOW()</td><td>Fecha y hora actual</td><td><code style="font-family:var(--mono);font-size:0.8em">2024-03-15 10:30:00</code></td></tr>
+            <tr><td class="fn-name">CURDATE()</td><td>Solo la fecha actual</td><td><code style="font-family:var(--mono);font-size:0.8em">2024-03-15</code></td></tr>
+            <tr><td class="fn-name">YEAR(d)</td><td>Extrae el año</td><td><code style="font-family:var(--mono);font-size:0.8em">YEAR('2024-03-15') → 2024</code></td></tr>
+            <tr><td class="fn-name">MONTH(d)</td><td>Extrae el mes</td><td><code style="font-family:var(--mono);font-size:0.8em">MONTH('2024-03-15') → 3</code></td></tr>
+            <tr><td class="fn-name">DATEDIFF(a,b)</td><td>Días entre dos fechas</td><td><code style="font-family:var(--mono);font-size:0.8em">DATEDIFF('2024-03-15','2024-01-01') → 74</code></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="code-block">
+        <div class="code-header"><span class="code-label">Ejemplo combinando funciones de texto y número</span></div>
+        <div class="code-body"><span class="kw">SELECT</span>
+  <span class="fn">UPPER</span>(vendedor)              <span class="kw">AS</span> nombre,
+  <span class="fn">COUNT</span>(*)                      <span class="kw">AS</span> num_ventas,
+  <span class="fn">ROUND</span>(<span class="fn">SUM</span>(monto), <span class="num">2</span>)      <span class="kw">AS</span> total,
+  <span class="fn">ROUND</span>(<span class="fn">AVG</span>(monto), <span class="num">2</span>)      <span class="kw">AS</span> promedio
+<span class="kw">FROM</span> ventas
+<span class="kw">WHERE</span> activo = <span class="num">1</span>
+<span class="kw">GROUP BY</span> vendedor
+<span class="kw">ORDER BY</span> total <span class="kw">DESC</span>;</div>
+      </div>
+
+      <div class="box box-teal">
+        <div class="box-icon">📌</div>
+        <div class="box-body">
+          <strong>GROUP BY aparece aquí — ¿qué es?</strong>
+          El ejemplo de arriba usa GROUP BY para calcular estadísticas por cada vendedor. GROUP BY es el siguiente tema de la guía y es el complemento natural de las funciones de agregado.
+        </div>
+      </div>
+    </div>
+
+    <hr>
+
+    <!-- RESUMEN -->
+    <span class="section-anchor" id="resumen"></span>
+    <div class="section">
+      <h2>Resumen: funciones completo</h2>
+
+      <div class="code-block">
+        <div class="code-header"><span class="code-label">Todo junto en un ejemplo real</span></div>
+        <div class="code-body"><span class="cm">-- Reporte completo de ventas activas</span>
+<span class="kw">SELECT</span>
+  <span class="fn">COUNT</span>(*)                    <span class="kw">AS</span> <span class="str">'Total ventas'</span>,
+  <span class="fn">COUNT</span>(<span class="kw">DISTINCT</span> vendedor)   <span class="kw">AS</span> <span class="str">'Vendedores'</span>,
+  <span class="fn">ROUND</span>(<span class="fn">SUM</span>(monto), <span class="num">2</span>)    <span class="kw">AS</span> <span class="str">'Ingresos totales'</span>,
+  <span class="fn">ROUND</span>(<span class="fn">AVG</span>(monto), <span class="num">2</span>)    <span class="kw">AS</span> <span class="str">'Ticket promedio'</span>,
+  <span class="fn">MAX</span>(monto)               <span class="kw">AS</span> <span class="str">'Venta más alta'</span>,
+  <span class="fn">MIN</span>(monto)               <span class="kw">AS</span> <span class="str">'Venta más baja'</span>
+<span class="kw">FROM</span> ventas
+<span class="kw">WHERE</span> activo = <span class="num">1</span>;</div>
+      </div>
+
+      <h3 style="margin-top:1.75rem">Lo que aprendiste</h3>
+      <ul class="checklist">
+        <li>Las funciones de agregado condensan múltiples filas en un solo resultado</li>
+        <li>COUNT(*) cuenta todas las filas; COUNT(col) ignora los NULL de esa columna</li>
+        <li>SUM() suma valores numéricos ignorando NULL</li>
+        <li>AVG() calcula el promedio ignorando NULL en suma Y en el divisor</li>
+        <li>MAX() y MIN() devuelven el valor más alto y más bajo; funcionan con texto y fechas</li>
+        <li>Podés usar varias funciones en el mismo SELECT para un resumen completo</li>
+        <li>WHERE filtra las filas antes de que la función las procese</li>
+        <li>Usá siempre AS para darle nombres legibles a los resultados</li>
+        <li>ROUND(), UPPER(), NOW() y otras funciones complementan las de agregado</li>
+      </ul>
+    </div>
+
+  </article>
+</div>
+
+<footer>
+  <div>Guía de MySQL · <strong>Funciones de agregado</strong></div>
+  <div>Desarrollado por <strong>Darwin Chamba</strong> · Desarrollador Fullstack</div>
+</footer>
+
+<script>
+  const links   = document.querySelectorAll('.aside-links a');
+  const anchors = document.querySelectorAll('.section-anchor');
+  window.addEventListener('scroll', () => {
+    let current = '';
+    anchors.forEach(a => {
+      if (window.scrollY >= a.offsetTop - 70) current = a.id;
+    });
+    links.forEach(a => a.classList.toggle('active', a.getAttribute('href') === '#' + current));
+  }, { passive: true });
+</script>
+</body>
+</html>

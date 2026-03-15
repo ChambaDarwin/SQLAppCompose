@@ -1,0 +1,662 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Subconsultas en MySQL — Guía completa</title>
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;0,700;1,400&family=DM+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../style/subconsultas.css">
+</head>
+<body>
+
+<nav>
+  <div class="nav-logo">mysql &gt; Subconsultas</div>
+  <a class="nav-back" href="index.html">← Volver al índice</a>
+</nav>
+
+<div class="page">
+  <aside>
+    <div class="aside-title">En esta guía</div>
+    <ul class="aside-links">
+      <li><a href="#intro">¿Qué es una subconsulta?</a></li>
+      <li><a href="#tablas">Las tablas ejemplo</a></li>
+      <li><a href="#tipos">Tipos de subconsulta</a></li>
+      <li><a href="#en-where">En WHERE</a></li>
+      <li><a href="#con-in">Con IN</a></li>
+      <li><a href="#con-exists">Con EXISTS</a></li>
+      <li><a href="#en-from">En FROM</a></li>
+      <li><a href="#en-select">En SELECT</a></li>
+      <li><a href="#en-having">En HAVING</a></li>
+      <li><a href="#vs-join">vs JOIN</a></li>
+      <li><a href="#errores">Errores comunes</a></li>
+      <li><a href="#resumen">Resumen</a></li>
+    </ul>
+  </aside>
+
+  <article>
+
+    <!-- HERO -->
+    <div class="hero">
+      <div class="hero-tag">MySQL · Nivel avanzado</div>
+      <h1>Dominando las <em>Subconsultas</em><br>en MySQL</h1>
+      <p class="hero-lead">Una subconsulta es un SELECT dentro de otro SELECT. Te permite usar el resultado de una consulta como condición, tabla o valor en otra — sin necesidad de guardar el resultado intermedio.</p>
+    </div>
+
+    <!-- INTRO -->
+    <span class="section-anchor" id="intro"></span>
+    <div class="section">
+      <h2>¿Qué es una subconsulta?</h2>
+      <p>Una subconsulta (también llamada <em>subquery</em> o consulta anidada) es una sentencia SELECT que vive dentro de otra sentencia SQL. La consulta interior se ejecuta primero y su resultado es usado por la consulta exterior.</p>
+
+      <div class="box box-amber">
+        <div class="box-icon">🪆</div>
+        <div class="box-body">
+          <strong>Analogía de las muñecas rusas</strong>
+          Una subconsulta es como una matryoshka: hay una muñeca dentro de otra. Cuando abres la muñeca exterior (consulta principal), primero tienes que resolver qué hay adentro (subconsulta). El resultado de la muñeca interior se convierte en parte de la exterior. Podés tener varios niveles de anidación.
+        </div>
+      </div>
+
+      <div class="anatomy">
+        <div class="anatomy-row">
+          <div class="anatomy-kw">Consulta exterior</div>
+          <div class="anatomy-desc"><strong>La consulta principal.</strong> Usa el resultado de la subconsulta como condición, tabla o valor calculado.</div>
+        </div>
+        <div class="anatomy-row">
+          <div class="anatomy-kw">( )</div>
+          <div class="anatomy-desc"><strong>Paréntesis obligatorios.</strong> La subconsulta SIEMPRE va entre paréntesis. Sin ellos MySQL da error de sintaxis.</div>
+        </div>
+        <div class="anatomy-row">
+          <div class="anatomy-kw">Consulta interior</div>
+          <div class="anatomy-desc"><strong>La subconsulta.</strong> Se ejecuta primero. Su resultado alimenta a la consulta exterior.</div>
+        </div>
+        <div class="anatomy-row">
+          <div class="anatomy-kw">Alias (AS)</div>
+          <div class="anatomy-desc"><strong>Obligatorio en FROM.</strong> Cuando la subconsulta va en el FROM, siempre necesita un alias.</div>
+        </div>
+      </div>
+
+      <div class="nested-viz">
+<span class="outer"><span class="kw">SELECT</span> nombre <span class="kw">FROM</span> empleados</span>
+<span class="outer"><span class="kw">WHERE</span> salario = </span><span class="nest-bracket">(</span>
+<span class="indent inner-q"><span class="cm">-- Subconsulta: se ejecuta primero</span></span>
+<span class="indent inner-q"><span class="kw">SELECT</span> <span class="fn">MAX</span>(salario) <span class="kw">FROM</span> empleados</span>
+<span class="nest-bracket">)</span><span class="outer">;</span>
+      </div>
+    </div>
+
+    <!-- TABLAS -->
+    <span class="section-anchor" id="tablas"></span>
+    <div class="section">
+      <h2>Las tablas que usaremos</h2>
+
+      <h3>Tabla: empleados</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>id</th><th>nombre</th><th>ciudad</th><th>departamento</th><th>salario</th><th>activo</th></tr></thead>
+          <tbody>
+            <tr><td>1</td><td>Ana Torres</td><td>Quito</td><td>Ingeniería</td><td>3410</td><td>1</td></tr>
+            <tr><td>2</td><td>Luis Mora</td><td>Guayaquil</td><td>Ventas</td><td>1900</td><td>1</td></tr>
+            <tr><td>3</td><td>Carmen Ríos</td><td>Quito</td><td>Ingeniería</td><td>3520</td><td>1</td></tr>
+            <tr><td>4</td><td>Pedro Vega</td><td>Cuenca</td><td>RRHH</td><td>1850</td><td>0</td></tr>
+            <tr><td>5</td><td>Sofía León</td><td>Guayaquil</td><td>Ventas</td><td>2100</td><td>1</td></tr>
+            <tr><td>6</td><td>Marco Díaz</td><td>Quito</td><td>RRHH</td><td>1750</td><td>1</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Tabla: pedidos</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>id</th><th>empleado_id</th><th>producto</th><th>monto</th></tr></thead>
+          <tbody>
+            <tr><td>101</td><td>1</td><td>Laptop</td><td>1200.00</td></tr>
+            <tr><td>102</td><td>2</td><td>Mouse</td><td>25.00</td></tr>
+            <tr><td>103</td><td>1</td><td>Monitor</td><td>350.00</td></tr>
+            <tr><td>104</td><td>5</td><td>Teclado</td><td>80.00</td></tr>
+            <tr><td>105</td><td>3</td><td>Webcam</td><td>60.00</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- TIPOS -->
+    <span class="section-anchor" id="tipos"></span>
+    <div class="section">
+      <h2>Tipos de subconsulta según su ubicación</h2>
+      <p>Una subconsulta puede ir en distintas partes de la consulta principal, y su comportamiento cambia según dónde esté.</p>
+
+      <div class="type-cards">
+        <div class="type-card where">
+          <div class="type-card-name">En WHERE</div>
+          <div class="type-card-desc">Filtra filas usando el resultado como condición. El más común.</div>
+        </div>
+        <div class="type-card from">
+          <div class="type-card-name">En FROM</div>
+          <div class="type-card-desc">La subconsulta actúa como una tabla temporal. Necesita alias.</div>
+        </div>
+        <div class="type-card select">
+          <div class="type-card-name">En SELECT</div>
+          <div class="type-card-desc">Calcula un valor por cada fila del resultado.</div>
+        </div>
+        <div class="type-card having">
+          <div class="type-card-name">En HAVING</div>
+          <div class="type-card-desc">Filtra grupos usando el resultado como condición.</div>
+        </div>
+      </div>
+    </div>
+
+    <hr>
+
+    <!-- EN WHERE -->
+    <span class="section-anchor" id="en-where"></span>
+    <div class="section">
+      <h2>Subconsulta en WHERE</h2>
+      <p>Es el uso más frecuente. La subconsulta calcula un valor o lista de valores, y el WHERE filtra las filas que cumplen esa condición.</p>
+
+      <div class="box box-amber">
+        <div class="box-icon">🔍</div>
+        <div class="box-body">
+          <strong>Analogía del filtro dinámico</strong>
+          Imagina que querés los empleados que ganan más que el promedio, pero no sabés el promedio de memoria. La subconsulta calcula ese promedio automáticamente y lo usa como filtro. Es un filtro que se recalcula solo cada vez.
+        </div>
+      </div>
+
+      <div class="code-block">
+        <div class="code-header"><span class="code-label">Empleados que ganan más que el promedio</span></div>
+        <div class="code-body"><span class="kw">SELECT</span> nombre, salario
+<span class="kw">FROM</span> empleados
+<span class="kw">WHERE</span> salario > <span class="sub">(</span>
+  <span class="sub"><span class="kw">SELECT</span> <span class="fn">AVG</span>(salario) <span class="kw">FROM</span> empleados</span>
+<span class="sub">)</span>;
+
+<span class="cm">-- La subconsulta devuelve: 2421.67
+-- WHERE filtra salarios mayores a ese valor</span></div>
+      </div>
+
+      <div class="result-label">La subconsulta calcula AVG = 2421.67 → Resultado:</div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>nombre</th><th>salario</th></tr></thead>
+          <tbody>
+            <tr><td class="hi-a">Ana Torres</td><td>3410</td></tr>
+            <tr><td class="hi-a">Carmen Ríos</td><td>3520</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="code-block">
+        <div class="code-header"><span class="code-label">El empleado con el salario más alto</span></div>
+        <div class="code-body"><span class="kw">SELECT</span> nombre, salario
+<span class="kw">FROM</span> empleados
+<span class="kw">WHERE</span> salario = <span class="sub">(</span>
+  <span class="sub"><span class="kw">SELECT</span> <span class="fn">MAX</span>(salario) <span class="kw">FROM</span> empleados</span>
+<span class="sub">)</span>;</div>
+      </div>
+
+      <div class="result-label">Resultado →</div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>nombre</th><th>salario</th></tr></thead>
+          <tbody>
+            <tr><td class="hi-a">Carmen Ríos</td><td>3520</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="box box-blue">
+        <div class="box-icon">📌</div>
+        <div class="box-body">
+          <strong>Subconsulta escalar vs de lista</strong>
+          Si la subconsulta devuelve <strong>un solo valor</strong> (como MAX o AVG), usa <span class="tag-blue">=</span>, <span class="tag-blue">&gt;</span>, <span class="tag-blue">&lt;</span>. Si devuelve <strong>múltiples valores</strong>, usa <span class="tag-blue">IN</span>, <span class="tag-blue">NOT IN</span>, <span class="tag-blue">ANY</span>, <span class="tag-blue">ALL</span>.
+        </div>
+      </div>
+    </div>
+
+    <!-- CON IN -->
+    <span class="section-anchor" id="con-in"></span>
+    <div class="section">
+      <h2>Subconsulta con IN y NOT IN</h2>
+      <p>Cuando la subconsulta devuelve múltiples valores (varias filas), usás IN para verificar si un valor está en esa lista, o NOT IN para lo contrario.</p>
+
+      <div class="code-block">
+        <div class="code-header"><span class="code-label">Empleados que tienen al menos un pedido</span></div>
+        <div class="code-body"><span class="kw">SELECT</span> nombre, ciudad
+<span class="kw">FROM</span> empleados
+<span class="kw">WHERE</span> id <span class="kw">IN</span> <span class="sub">(</span>
+  <span class="sub"><span class="kw">SELECT</span> <span class="kw">DISTINCT</span> empleado_id <span class="kw">FROM</span> pedidos</span>
+<span class="sub">)</span>;
+
+<span class="cm">-- Subconsulta devuelve: (1, 2, 3, 5)
+-- WHERE filtra los empleados con esos ids</span></div>
+      </div>
+
+      <div class="result-label">La subconsulta devuelve ids: 1, 2, 3, 5 → Resultado:</div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>nombre</th><th>ciudad</th></tr></thead>
+          <tbody>
+            <tr><td class="hi-a">Ana Torres</td><td>Quito</td></tr>
+            <tr><td class="hi-a">Luis Mora</td><td>Guayaquil</td></tr>
+            <tr><td class="hi-a">Carmen Ríos</td><td>Quito</td></tr>
+            <tr><td class="hi-a">Sofía León</td><td>Guayaquil</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="code-block">
+        <div class="code-header"><span class="code-label">Empleados que NO tienen ningún pedido</span></div>
+        <div class="code-body"><span class="kw">SELECT</span> nombre, ciudad
+<span class="kw">FROM</span> empleados
+<span class="kw">WHERE</span> id <span class="kw">NOT IN</span> <span class="sub">(</span>
+  <span class="sub"><span class="kw">SELECT</span> <span class="kw">DISTINCT</span> empleado_id <span class="kw">FROM</span> pedidos</span>
+<span class="sub">)</span>;</div>
+      </div>
+
+      <div class="result-label">Resultado → Pedro Vega y Marco Díaz no tienen pedidos</div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>nombre</th><th>ciudad</th></tr></thead>
+          <tbody>
+            <tr><td>Pedro Vega</td><td>Cuenca</td></tr>
+            <tr><td>Marco Díaz</td><td>Quito</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="box box-red">
+        <div class="box-icon">⚠️</div>
+        <div class="box-body">
+          <strong>NOT IN con NULLs es peligroso</strong>
+          Si la subconsulta devuelve algún NULL, <code style="font-family:var(--mono);font-size:0.85em">NOT IN</code> no devuelve ninguna fila. Esto es un bug silencioso muy común. Preferí <code style="font-family:var(--mono);font-size:0.85em">NOT EXISTS</code> cuando pueda haber NULLs.
+        </div>
+      </div>
+    </div>
+
+    <!-- CON EXISTS -->
+    <span class="section-anchor" id="con-exists"></span>
+    <div class="section">
+      <h2>Subconsulta con EXISTS y NOT EXISTS</h2>
+      <p>EXISTS verifica si la subconsulta devuelve al menos una fila. No le importa qué valor devuelve — solo si existe o no. Es más eficiente que IN para tablas grandes.</p>
+
+      <div class="box box-amber">
+        <div class="box-icon">🚦</div>
+        <div class="box-body">
+          <strong>Analogía del semáforo</strong>
+          EXISTS es como un detector de presencia: solo necesita saber si hay algo, no qué hay. Si detecta al menos una fila, devuelve verdadero (verde). Si no detecta nada, devuelve falso (rojo). La consulta exterior actúa según ese semáforo.
+        </div>
+      </div>
+
+      <div class="code-block">
+        <div class="code-header"><span class="code-label">Empleados que tienen al menos un pedido (EXISTS)</span></div>
+        <div class="code-body"><span class="kw">SELECT</span> <span class="tbl">e</span>.nombre, <span class="tbl">e</span>.ciudad
+<span class="kw">FROM</span> empleados <span class="tbl">e</span>
+<span class="kw">WHERE</span> <span class="kw">EXISTS</span> <span class="sub">(</span>
+  <span class="sub"><span class="kw">SELECT</span> <span class="num">1</span> <span class="kw">FROM</span> pedidos <span class="tbl">p</span></span>
+  <span class="sub"><span class="kw">WHERE</span> <span class="tbl">p</span>.empleado_id = <span class="tbl">e</span>.id</span>
+<span class="sub">)</span>;
+
+<span class="cm">-- "SELECT 1" es convención: EXISTS solo verifica
+-- si hay filas, no qué columna se devuelve</span></div>
+      </div>
+
+      <div class="code-block">
+        <div class="code-header"><span class="code-label">Empleados SIN pedidos (NOT EXISTS)</span></div>
+        <div class="code-body"><span class="kw">SELECT</span> <span class="tbl">e</span>.nombre, <span class="tbl">e</span>.ciudad
+<span class="kw">FROM</span> empleados <span class="tbl">e</span>
+<span class="kw">WHERE</span> <span class="kw">NOT EXISTS</span> <span class="sub">(</span>
+  <span class="sub"><span class="kw">SELECT</span> <span class="num">1</span> <span class="kw">FROM</span> pedidos <span class="tbl">p</span></span>
+  <span class="sub"><span class="kw">WHERE</span> <span class="tbl">p</span>.empleado_id = <span class="tbl">e</span>.id</span>
+<span class="sub">)</span>;</div>
+      </div>
+
+      <div class="compare">
+        <div class="compare-box">
+          <div class="compare-header sub">EXISTS</div>
+          <div class="code-body"><span class="cm">-- Más eficiente que IN
+-- para tablas grandes.
+-- Se detiene al encontrar
+-- la primera coincidencia.
+-- Seguro con NULLs.</span></div>
+        </div>
+        <div class="compare-box">
+          <div class="compare-header join">IN</div>
+          <div class="code-body"><span class="cm">-- Más simple de leer.
+-- Puede ser lento si la
+-- subconsulta devuelve
+-- miles de valores.
+-- Problemático con NULLs.</span></div>
+        </div>
+      </div>
+    </div>
+
+    <hr>
+
+    <!-- EN FROM -->
+    <span class="section-anchor" id="en-from"></span>
+    <div class="section">
+      <h2>Subconsulta en FROM — tabla derivada</h2>
+      <p>Cuando la subconsulta va en el FROM, se convierte en una <strong>tabla temporal</strong> (también llamada tabla derivada). La consulta exterior consulta esa tabla como si fuera real. <strong>Siempre necesita un alias.</strong></p>
+
+      <div class="box box-amber">
+        <div class="box-icon">🏗️</div>
+        <div class="box-body">
+          <strong>Analogía del andamio</strong>
+          Una tabla derivada es como un andamio de construcción: no es parte del edificio final, pero te permite construirlo. Calculás datos intermedios en la subconsulta (el andamio), y la consulta exterior los usa para obtener el resultado final.
+        </div>
+      </div>
+
+      <div class="code-block">
+        <div class="code-header"><span class="code-label">Departamentos con salario promedio mayor a 2000</span></div>
+        <div class="code-body"><span class="kw">SELECT</span> dept_stats.departamento, dept_stats.promedio
+<span class="kw">FROM</span> <span class="sub">(</span>
+  <span class="sub">  <span class="kw">SELECT</span> departamento,</span>
+  <span class="sub">         <span class="fn">ROUND</span>(<span class="fn">AVG</span>(salario), <span class="num">2</span>) <span class="kw">AS</span> promedio</span>
+  <span class="sub">  <span class="kw">FROM</span> empleados</span>
+  <span class="sub">  <span class="kw">GROUP BY</span> departamento</span>
+<span class="sub">)</span> <span class="kw">AS</span> dept_stats
+<span class="kw">WHERE</span> dept_stats.promedio > <span class="num">2000</span>;</div>
+      </div>
+
+      <div class="result-label">La subconsulta calcula promedios por departamento → Resultado:</div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>departamento</th><th>promedio</th></tr></thead>
+          <tbody>
+            <tr><td class="hi-a">Ingeniería</td><td>3465.00</td></tr>
+            <tr><td class="hi-a">Ventas</td><td>2000.00</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="box box-green">
+        <div class="box-icon">💡</div>
+        <div class="box-body">
+          <strong>¿Por qué usar subconsulta en FROM?</strong>
+          Porque no podés usar alias de funciones de agregado directamente en WHERE. Por ejemplo, <code style="font-family:var(--mono);font-size:0.85em">WHERE AVG(salario) &gt; 2000</code> da error. La subconsulta en FROM resuelve esto al calcular el promedio primero como una "tabla" separada.
+        </div>
+      </div>
+    </div>
+
+    <!-- EN SELECT -->
+    <span class="section-anchor" id="en-select"></span>
+    <div class="section">
+      <h2>Subconsulta en SELECT — valor calculado</h2>
+      <p>Cuando la subconsulta va dentro del SELECT, calcula <strong>un valor por cada fila</strong> del resultado principal. Debe devolver exactamente un valor (escalar).</p>
+
+      <div class="code-block">
+        <div class="code-header"><span class="code-label">Cada empleado con el salario máximo de su departamento</span></div>
+        <div class="code-body"><span class="kw">SELECT</span>
+  nombre,
+  departamento,
+  salario,
+  <span class="sub">(</span>
+    <span class="sub"><span class="kw">SELECT</span> <span class="fn">MAX</span>(salario)</span>
+    <span class="sub"><span class="kw">FROM</span> empleados e2</span>
+    <span class="sub"><span class="kw">WHERE</span> e2.departamento = e1.departamento</span>
+  <span class="sub">)</span> <span class="kw">AS</span> max_dpto
+<span class="kw">FROM</span> empleados e1;</div>
+      </div>
+
+      <div class="result-label">Resultado → cada fila muestra el máximo de su propio departamento</div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>nombre</th><th>departamento</th><th>salario</th><th>max_dpto</th></tr></thead>
+          <tbody>
+            <tr><td>Ana Torres</td><td>Ingeniería</td><td>3410</td><td class="hi-a">3520</td></tr>
+            <tr><td>Luis Mora</td><td>Ventas</td><td>1900</td><td class="hi-b">2100</td></tr>
+            <tr><td>Carmen Ríos</td><td>Ingeniería</td><td>3520</td><td class="hi-a">3520</td></tr>
+            <tr><td>Pedro Vega</td><td>RRHH</td><td>1850</td><td class="hi-g">1850</td></tr>
+            <tr><td>Sofía León</td><td>Ventas</td><td>2100</td><td class="hi-b">2100</td></tr>
+            <tr><td>Marco Díaz</td><td>RRHH</td><td>1750</td><td class="hi-g">1850</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="box box-accent">
+        <div class="box-icon">🔗</div>
+        <div class="box-body">
+          <strong>Subconsulta correlacionada</strong>
+          El ejemplo anterior es una <em>subconsulta correlacionada</em>: la subconsulta interior referencia una columna de la consulta exterior (<code style="font-family:var(--mono);font-size:0.85em">e1.departamento</code>). Se ejecuta una vez por cada fila de la consulta exterior — puede ser lenta en tablas grandes.
+        </div>
+      </div>
+    </div>
+
+    <!-- EN HAVING -->
+    <span class="section-anchor" id="en-having"></span>
+    <div class="section">
+      <h2>Subconsulta en HAVING</h2>
+      <p>Podés usar subconsultas en HAVING para comparar estadísticas de grupos contra un valor calculado dinámicamente.</p>
+
+      <div class="code-block">
+        <div class="code-header"><span class="code-label">Departamentos cuyo salario promedio supera el promedio global</span></div>
+        <div class="code-body"><span class="kw">SELECT</span>
+  departamento,
+  <span class="fn">ROUND</span>(<span class="fn">AVG</span>(salario), <span class="num">2</span>) <span class="kw">AS</span> promedio_dpto
+<span class="kw">FROM</span> empleados
+<span class="kw">GROUP BY</span> departamento
+<span class="kw">HAVING</span> <span class="fn">AVG</span>(salario) > <span class="sub">(</span>
+  <span class="sub"><span class="kw">SELECT</span> <span class="fn">AVG</span>(salario) <span class="kw">FROM</span> empleados</span>
+<span class="sub">)</span>;
+
+<span class="cm">-- Subconsulta calcula el promedio global: 2421.67
+-- HAVING filtra departamentos que lo superan</span></div>
+      </div>
+
+      <div class="result-label">Resultado →</div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>departamento</th><th>promedio_dpto</th></tr></thead>
+          <tbody>
+            <tr><td class="hi-a">Ingeniería</td><td>3465.00</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <hr>
+
+    <!-- VS JOIN -->
+    <span class="section-anchor" id="vs-join"></span>
+    <div class="section">
+      <h2>Subconsulta vs JOIN — ¿cuándo usar cada uno?</h2>
+      <p>La misma consulta muchas veces se puede escribir con subconsulta o con JOIN. Cada enfoque tiene sus ventajas.</p>
+
+      <div class="compare">
+        <div class="compare-box">
+          <div class="compare-header sub">Con subconsulta</div>
+          <div class="code-body"><span class="kw">SELECT</span> nombre
+<span class="kw">FROM</span> empleados
+<span class="kw">WHERE</span> id <span class="kw">IN</span> <span class="sub">(</span>
+  <span class="sub">  <span class="kw">SELECT</span> empleado_id</span>
+  <span class="sub">  <span class="kw">FROM</span> pedidos</span>
+<span class="sub">)</span>;</div>
+        </div>
+        <div class="compare-box">
+          <div class="compare-header join">Con JOIN equivalente</div>
+          <div class="code-body"><span class="kw">SELECT DISTINCT</span> <span class="tbl">e</span>.nombre
+<span class="kw">FROM</span> <span class="tbl">empleados</span> <span class="tbl">e</span>
+<span class="kw">INNER JOIN</span> <span class="tbl">pedidos</span> <span class="tbl">p</span>
+  <span class="kw">ON</span> <span class="tbl">e</span>.id = <span class="tbl">p</span>.empleado_id;</div>
+        </div>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th></th><th>Subconsulta</th><th>JOIN</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Legibilidad</strong></td><td>Más clara para lógica compleja</td><td>Más clara para combinar columnas</td></tr>
+            <tr><td><strong>Rendimiento</strong></td><td>Puede ser lenta (correlacionada)</td><td>Generalmente más rápido con índices</td></tr>
+            <tr><td><strong>Columnas extra</strong></td><td>Solo filtra, no agrega columnas</td><td>Puede traer columnas de ambas tablas</td></tr>
+            <tr><td><strong>Valores calculados</strong></td><td><span class="tag-green">Ideal</span> (MAX, AVG como filtro)</td><td>Más complejo para esto</td></tr>
+            <tr><td><strong>NOT EXISTS</strong></td><td><span class="tag-green">Natural y seguro</span></td><td>Necesita LEFT JOIN + IS NULL</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="box box-teal">
+        <div class="box-icon">📌</div>
+        <div class="box-body">
+          <strong>Regla práctica</strong>
+          Usá subconsulta cuando necesitás comparar contra un valor calculado (MAX, AVG, COUNT) o verificar existencia (EXISTS). Usá JOIN cuando necesitás columnas de ambas tablas en el resultado o cuando el rendimiento es crítico.
+        </div>
+      </div>
+    </div>
+
+    <!-- ERRORES -->
+    <span class="section-anchor" id="errores"></span>
+    <div class="section">
+      <h2>Errores comunes</h2>
+
+      <h3>1. Subconsulta sin paréntesis</h3>
+      <div class="compare">
+        <div class="compare-box">
+          <div class="compare-header bad">✗ Error de sintaxis</div>
+          <div class="code-body"><span class="kw">SELECT</span> nombre
+<span class="kw">FROM</span> empleados
+<span class="kw">WHERE</span> salario >
+  <span class="kw">SELECT</span> <span class="fn">AVG</span>(salario)
+  <span class="kw">FROM</span> empleados;
+<span class="cm">-- Falta el paréntesis</span></div>
+        </div>
+        <div class="compare-box">
+          <div class="compare-header good">✓ Correcto</div>
+          <div class="code-body"><span class="kw">SELECT</span> nombre
+<span class="kw">FROM</span> empleados
+<span class="kw">WHERE</span> salario > <span class="sub">(</span>
+  <span class="sub">  <span class="kw">SELECT</span> <span class="fn">AVG</span>(salario)</span>
+  <span class="sub">  <span class="kw">FROM</span> empleados</span>
+<span class="sub">)</span>;
+<span class="cm">-- Siempre entre ( ) ✓</span></div>
+        </div>
+      </div>
+
+      <h3 style="margin-top:1.5rem">2. Subconsulta en FROM sin alias</h3>
+      <div class="compare">
+        <div class="compare-box">
+          <div class="compare-header bad">✗ Error — falta alias</div>
+          <div class="code-body"><span class="kw">SELECT</span> departamento
+<span class="kw">FROM</span> <span class="sub">(</span>
+  <span class="sub">  <span class="kw">SELECT</span> departamento,</span>
+  <span class="sub">         <span class="fn">AVG</span>(salario) <span class="kw">AS</span> prom</span>
+  <span class="sub">  <span class="kw">FROM</span> empleados</span>
+  <span class="sub">  <span class="kw">GROUP BY</span> departamento</span>
+<span class="sub">)</span>;
+<span class="cm">-- Tabla derivada necesita
+-- un alias obligatorio</span></div>
+        </div>
+        <div class="compare-box">
+          <div class="compare-header good">✓ Con alias</div>
+          <div class="code-body"><span class="kw">SELECT</span> stats.departamento
+<span class="kw">FROM</span> <span class="sub">(</span>
+  <span class="sub">  <span class="kw">SELECT</span> departamento,</span>
+  <span class="sub">         <span class="fn">AVG</span>(salario) <span class="kw">AS</span> prom</span>
+  <span class="sub">  <span class="kw">FROM</span> empleados</span>
+  <span class="sub">  <span class="kw">GROUP BY</span> departamento</span>
+<span class="sub">)</span> <span class="kw">AS</span> stats;
+<span class="cm">-- "AS stats" es el alias ✓</span></div>
+        </div>
+      </div>
+
+      <h3 style="margin-top:1.5rem">3. Usar = cuando la subconsulta devuelve múltiples filas</h3>
+      <div class="compare">
+        <div class="compare-box">
+          <div class="compare-header bad">✗ Error en ejecución</div>
+          <div class="code-body"><span class="kw">SELECT</span> nombre
+<span class="kw">FROM</span> empleados
+<span class="kw">WHERE</span> id = <span class="sub">(</span>
+  <span class="sub">  <span class="kw">SELECT</span> empleado_id</span>
+  <span class="sub">  <span class="kw">FROM</span> pedidos</span>
+<span class="sub">)</span>;
+<span class="cm">-- Devuelve 5 filas, no 1
+-- "=" espera un solo valor</span></div>
+        </div>
+        <div class="compare-box">
+          <div class="compare-header good">✓ Usar IN</div>
+          <div class="code-body"><span class="kw">SELECT</span> nombre
+<span class="kw">FROM</span> empleados
+<span class="kw">WHERE</span> id <span class="kw">IN</span> <span class="sub">(</span>
+  <span class="sub">  <span class="kw">SELECT</span> empleado_id</span>
+  <span class="sub">  <span class="kw">FROM</span> pedidos</span>
+<span class="sub">)</span>;
+<span class="cm">-- IN acepta múltiples
+-- valores ✓</span></div>
+        </div>
+      </div>
+    </div>
+
+    <hr>
+
+    <!-- RESUMEN -->
+    <span class="section-anchor" id="resumen"></span>
+    <div class="section">
+      <h2>Resumen: subconsultas completo</h2>
+
+      <div class="code-block">
+        <div class="code-header"><span class="code-label">Ejemplo completo — reporte avanzado</span></div>
+        <div class="code-body"><span class="cm">-- Empleados activos que ganan más que el promedio
+-- de su departamento, con el promedio global como referencia</span>
+<span class="kw">SELECT</span>
+  <span class="tbl">e</span>.nombre,
+  <span class="tbl">e</span>.departamento,
+  <span class="tbl">e</span>.salario,
+  dept.promedio_dpto,
+  <span class="sub">(</span><span class="kw">SELECT</span> <span class="fn">ROUND</span>(<span class="fn">AVG</span>(salario),<span class="num">2</span>) <span class="kw">FROM</span> empleados<span class="sub">)</span> <span class="kw">AS</span> promedio_global
+<span class="kw">FROM</span> empleados <span class="tbl">e</span>
+<span class="kw">INNER JOIN</span> <span class="sub">(</span>
+  <span class="sub">  <span class="kw">SELECT</span> departamento,</span>
+  <span class="sub">         <span class="fn">ROUND</span>(<span class="fn">AVG</span>(salario),<span class="num">2</span>) <span class="kw">AS</span> promedio_dpto</span>
+  <span class="sub">  <span class="kw">FROM</span> empleados</span>
+  <span class="sub">  <span class="kw">GROUP BY</span> departamento</span>
+<span class="sub">)</span> <span class="kw">AS</span> dept
+  <span class="kw">ON</span> <span class="tbl">e</span>.departamento = dept.departamento
+<span class="kw">WHERE</span> <span class="tbl">e</span>.activo = <span class="num">1</span>
+  <span class="kw">AND</span> <span class="tbl">e</span>.salario > dept.promedio_dpto
+<span class="kw">ORDER BY</span> <span class="tbl">e</span>.salario <span class="kw">DESC</span>;</div>
+      </div>
+
+      <div class="result-label">Resultado →</div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>nombre</th><th>departamento</th><th>salario</th><th>promedio_dpto</th><th>promedio_global</th></tr></thead>
+          <tbody>
+            <tr><td class="hi-a">Carmen Ríos</td><td>Ingeniería</td><td>3520</td><td>3465.00</td><td>2421.67</td></tr>
+            <tr><td class="hi-a">Sofía León</td><td>Ventas</td><td>2100</td><td>2000.00</td><td>2421.67</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3 style="margin-top:1.75rem">Lo que aprendiste</h3>
+      <ul class="checklist">
+        <li>Una subconsulta es un SELECT dentro de otro SELECT, siempre entre paréntesis</li>
+        <li>La subconsulta se ejecuta primero y su resultado alimenta a la consulta exterior</li>
+        <li>En WHERE con = usa subconsulta escalar (un valor); con IN usa subconsulta de lista</li>
+        <li>IN es simple pero problemático con NULLs; EXISTS es más seguro y eficiente</li>
+        <li>En FROM crea una tabla derivada temporal — siempre necesita un alias AS</li>
+        <li>En SELECT calcula un valor por cada fila (subconsulta correlacionada)</li>
+        <li>En HAVING compara estadísticas de grupos contra valores calculados dinámicamente</li>
+        <li>NOT IN con NULLs no devuelve filas — preferí NOT EXISTS en esos casos</li>
+        <li>JOIN es generalmente más rápido; subconsulta es más clara para lógica compleja</li>
+      </ul>
+    </div>
+
+  </article>
+</div>
+
+<footer>
+  <div>Guía de MySQL · <strong>Subconsultas</strong></div>
+  <div>Desarrollado por <strong>Darwin Chamba</strong> · Desarrollador Fullstack</div>
+</footer>
+
+<script>
+  const links   = document.querySelectorAll('.aside-links a');
+  const anchors = document.querySelectorAll('.section-anchor');
+  window.addEventListener('scroll', () => {
+    let current = '';
+    anchors.forEach(a => {
+      if (window.scrollY >= a.offsetTop - 70) current = a.id;
+    });
+    links.forEach(a => a.classList.toggle('active', a.getAttribute('href') === '#' + current));
+  }, { passive: true });
+</script>
+</body>
+</html>
