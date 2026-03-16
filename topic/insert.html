@@ -42,35 +42,29 @@
 
   <article>
 
-    <!-- HERO -->
     <div class="hero">
       <div class="hero-tag">MySQL · Nivel básico</div>
       <h1>Dominando el <em>INSERT</em><br>en MySQL</h1>
       <p class="hero-lead">Antes de consultar datos con SELECT, alguien tuvo que agregarlos. INSERT es el comando que convierte tu base de datos vacía en algo útil.</p>
     </div>
 
-    <!-- INTRO -->
     <span class="section-anchor" id="intro"></span>
     <div class="section">
       <h2>¿Qué es INSERT?</h2>
       <p>INSERT INTO es el comando que usas para <strong>agregar nuevas filas</strong> a una tabla. A diferencia de SELECT (que solo lee), INSERT escribe datos permanentemente en la base de datos.</p>
-
       <div class="analogy">
         <div class="analogy-icon">📝</div>
         <div class="analogy-text">
           <strong>Analogía del cuaderno de registro:</strong> Imagina una recepcionista con un cuaderno donde anota a cada visitante: nombre, hora de llegada, motivo. Cada vez que llega alguien nuevo, ella abre el cuaderno y escribe una fila nueva. INSERT hace exactamente eso: agrega una fila nueva al "cuaderno" (la tabla) con los datos que tú le indicas.
         </div>
       </div>
-
       <p>Cada vez que un usuario se registra en una app, compra un producto o envía un formulario, hay un INSERT trabajando detrás de escena.</p>
     </div>
 
-    <!-- TABLA -->
     <span class="section-anchor" id="tabla"></span>
     <div class="section">
       <h2>La tabla que usaremos</h2>
       <p>Trabajaremos con una tabla llamada <code style="font-family:var(--mono);font-size:0.85em;background:#f5f2ed;padding:2px 6px;border-radius:4px">productos</code>. Primero veamos cómo fue creada, para entender qué columnas tiene y qué tipo de datos acepta:</p>
-
       <div class="code-block">
         <div class="code-header"><span class="code-label">Estructura de la tabla productos</span></div>
         <div class="code-body"><span class="kw">CREATE TABLE</span> productos (
@@ -82,9 +76,7 @@
   <span class="col">activo</span>      <span class="fn">TINYINT</span> <span class="kw">DEFAULT</span> <span class="num">1</span>
 );</div>
       </div>
-
       <p>Actualmente la tabla está vacía. A lo largo de esta guía iremos llenándola con INSERT.</p>
-
       <div class="table-wrap">
         <table>
           <thead><tr><th>Columna</th><th>Tipo</th><th>Obligatoria</th><th>Notas</th></tr></thead>
@@ -100,12 +92,10 @@
       </div>
     </div>
 
-    <!-- SINTAXIS -->
     <span class="section-anchor" id="sintaxis"></span>
     <div class="section">
       <h2>Sintaxis básica</h2>
       <p>La estructura de INSERT siempre sigue el mismo patrón: dices en qué tabla, qué columnas vas a llenar, y qué valores pones en cada una.</p>
-
       <div class="anatomy">
         <div class="anatomy-row">
           <div class="anatomy-kw">INSERT INTO</div>
@@ -124,39 +114,31 @@
           <div class="anatomy-desc"><strong>Los valores concretos.</strong> Textos entre comillas simples, números sin comillas.</div>
         </div>
       </div>
-
       <div class="code-block">
         <div class="code-header"><span class="code-label">Insertar un producto completo</span></div>
         <div class="code-body"><span class="kw">INSERT INTO</span> productos (nombre, categoria, precio, stock, activo)
 <span class="kw">VALUES</span> (<span class="str">'Teclado mecánico'</span>, <span class="str">'Electrónica'</span>, <span class="num">89.99</span>, <span class="num">15</span>, <span class="num">1</span>);</div>
       </div>
-
       <div class="result-label">Estado de la tabla después del INSERT →</div>
       <div class="table-wrap">
         <table>
           <thead><tr><th>id</th><th>nombre</th><th>categoria</th><th>precio</th><th>stock</th><th>activo</th></tr></thead>
           <tbody>
             <tr>
-              <td class="new">1</td>
-              <td class="new">Teclado mecánico</td>
-              <td class="new">Electrónica</td>
-              <td class="new">89.99</td>
-              <td class="new">15</td>
-              <td class="new">1</td>
+              <td class="new">1</td><td class="new">Teclado mecánico</td>
+              <td class="new">Electrónica</td><td class="new">89.99</td>
+              <td class="new">15</td><td class="new">1</td>
             </tr>
           </tbody>
         </table>
       </div>
-
       <div class="tip"><strong>El id = 1 apareció solo.</strong> Como la columna <code style="font-family:var(--mono);font-size:0.85em">id</code> tiene AUTO_INCREMENT, MySQL la llena automáticamente. No necesitas incluirla en el INSERT.</div>
     </div>
 
-    <!-- TIPOS DE DATOS -->
     <span class="section-anchor" id="tipos"></span>
     <div class="section">
       <h2>¿Cómo escribir cada tipo de dato?</h2>
       <p>El formato de los valores varía según el tipo de dato de la columna. Mezclarlos es uno de los errores más comunes en INSERT.</p>
-
       <div class="table-wrap">
         <table>
           <thead><tr><th>Tipo de dato</th><th>Cómo escribirlo</th><th>Ejemplo</th></tr></thead>
@@ -171,7 +153,6 @@
           </tbody>
         </table>
       </div>
-
       <div class="analogy">
         <div class="analogy-icon">✉️</div>
         <div class="analogy-text">
@@ -182,19 +163,16 @@
 
     <hr>
 
-    <!-- MÚLTIPLES FILAS -->
     <span class="section-anchor" id="multiple"></span>
     <div class="section">
       <h2>Insertar múltiples filas a la vez</h2>
       <p>En vez de escribir un INSERT por cada fila, puedes insertar varias de una sola vez. Es más rápido y más eficiente, especialmente con grandes volúmenes de datos.</p>
-
       <div class="analogy">
         <div class="analogy-icon">🧺</div>
         <div class="analogy-text">
           <strong>Analogía del supermercado:</strong> Ir al supermercado 10 veces a comprar un producto cada vez es ineficiente. Es mucho mejor ir una sola vez con una lista de 10 productos. INSERT múltiple hace lo mismo: un solo viaje a la base de datos con todos los datos.
         </div>
       </div>
-
       <div class="code-block">
         <div class="code-header"><span class="code-label">Insertar 4 productos de una sola vez</span></div>
         <div class="code-body"><span class="kw">INSERT INTO</span> productos (nombre, categoria, precio, stock)
@@ -204,7 +182,6 @@
   (<span class="str">'Silla ergonómica'</span>,    <span class="str">'Mobiliario'</span>,  <span class="num">320.00</span>,   <span class="num">5</span>),
   (<span class="str">'Libreta de notas'</span>,    <span class="str">'Papelería'</span>,     <span class="num">3.50</span>, <span class="num">200</span>);</div>
       </div>
-
       <div class="result-label">Estado de la tabla después →</div>
       <div class="table-wrap">
         <table>
@@ -218,39 +195,31 @@
           </tbody>
         </table>
       </div>
-
       <div class="tip"><strong>Las filas nuevas están resaltadas en verde.</strong> Nota que <code style="font-family:var(--mono);font-size:0.85em">activo</code> se llenó solo con 1 porque definimos <code style="font-family:var(--mono);font-size:0.85em">DEFAULT 1</code> al crear la tabla.</div>
     </div>
 
-    <!-- COLUMNAS PARCIALES -->
     <span class="section-anchor" id="parcial"></span>
     <div class="section">
       <h2>Insertar sin llenar todas las columnas</h2>
       <p>No es obligatorio llenar todas las columnas. Puedes omitir las que tienen un valor por defecto (DEFAULT) o que permiten NULL. MySQL las llenará automáticamente.</p>
-
       <div class="code-block">
         <div class="code-header"><span class="code-label">Solo nombre y precio (lo mínimo obligatorio)</span></div>
         <div class="code-body"><span class="kw">INSERT INTO</span> productos (nombre, precio)
 <span class="kw">VALUES</span> (<span class="str">'Bolígrafo azul'</span>, <span class="num">1.20</span>);</div>
       </div>
-
       <div class="result-label">Fila resultante →</div>
       <div class="table-wrap">
         <table>
           <thead><tr><th>id</th><th>nombre</th><th>categoria</th><th>precio</th><th>stock</th><th>activo</th></tr></thead>
           <tbody>
             <tr>
-              <td class="new">6</td>
-              <td class="new">Bolígrafo azul</td>
-              <td class="null">NULL</td>
-              <td class="new">1.20</td>
-              <td class="new">0</td>
-              <td class="new">1</td>
+              <td class="new">6</td><td class="new">Bolígrafo azul</td>
+              <td class="null">NULL</td><td class="new">1.20</td>
+              <td class="new">0</td><td class="new">1</td>
             </tr>
           </tbody>
         </table>
       </div>
-
       <p>Observa lo que ocurrió con las columnas omitidas:</p>
       <div class="table-wrap">
         <table>
@@ -263,23 +232,19 @@
           </tbody>
         </table>
       </div>
-
       <div class="warning"><strong>¿Qué pasa si omites una columna NOT NULL sin DEFAULT?</strong> MySQL lanzará un error: <code style="font-family:var(--mono);font-size:0.85em">ERROR 1364: Field 'nombre' doesn't have a default value</code>. Siempre debes proveer valores para columnas NOT NULL sin DEFAULT.</div>
     </div>
 
-    <!-- AUTO INCREMENT -->
     <span class="section-anchor" id="autoincrement"></span>
     <div class="section">
       <h2>AUTO_INCREMENT: el ID automático</h2>
       <p>La columna <code style="font-family:var(--mono);font-size:0.85em;background:#f5f2ed;padding:2px 6px;border-radius:4px">id</code> con AUTO_INCREMENT es especial. MySQL le asigna automáticamente el siguiente número disponible cada vez que haces un INSERT.</p>
-
       <div class="analogy">
         <div class="analogy-icon">🎟️</div>
         <div class="analogy-text">
           <strong>Analogía del talonario de turnos:</strong> En un banco, cuando llegas te dan un número de turno: 1, 2, 3… Nadie decide el número manualmente, simplemente se asigna el siguiente disponible. AUTO_INCREMENT funciona igual: cada nuevo INSERT recibe el número siguiente automáticamente.
         </div>
       </div>
-
       <div class="code-block">
         <div class="code-header"><span class="code-label">Nunca incluyas el id en el INSERT</span></div>
         <div class="code-body"><span class="cm">-- ✓ Correcto: MySQL asigna el id solo</span>
@@ -289,27 +254,22 @@
 <span class="cm">-- Puedes ver el id generado con:</span>
 <span class="kw">SELECT</span> <span class="fn">LAST_INSERT_ID</span>();</div>
       </div>
-
       <div class="tip"><strong>LAST_INSERT_ID()</strong> devuelve el id de la última fila insertada en tu sesión. Muy útil cuando necesitas ese id para insertar en otra tabla relacionada.</div>
     </div>
 
     <hr>
 
-    <!-- INSERT + SELECT -->
     <span class="section-anchor" id="select"></span>
     <div class="section">
       <h2>INSERT + SELECT: copiar datos entre tablas</h2>
       <p>Puedes combinar INSERT con SELECT para insertar datos que ya existen en otra tabla (o en la misma). En lugar de VALUES, usas una consulta SELECT.</p>
-
       <div class="analogy">
         <div class="analogy-icon">📋</div>
         <div class="analogy-text">
           <strong>Analogía de la fotocopiadora:</strong> En vez de volver a escribir a mano un documento que ya tienes, lo fotocopias. INSERT + SELECT es la "fotocopiadora" de datos: toma registros de una tabla y los copia a otra sin tener que escribirlos uno a uno.
         </div>
       </div>
-
       <p>Supongamos que tenemos una tabla <code style="font-family:var(--mono);font-size:0.85em;background:#f5f2ed;padding:2px 6px;border-radius:4px">productos_archivo</code> y queremos copiar todos los productos inactivos:</p>
-
       <div class="code-block">
         <div class="code-header"><span class="code-label">Copiar productos inactivos a otra tabla</span></div>
         <div class="code-body"><span class="kw">INSERT INTO</span> productos_archivo (nombre, precio, categoria)
@@ -317,16 +277,13 @@
 <span class="kw">FROM</span> productos
 <span class="kw">WHERE</span> activo = <span class="num">0</span>;</div>
       </div>
-
       <div class="tip"><strong>No uses VALUES cuando combinas con SELECT.</strong> El SELECT reemplaza al VALUES. Las columnas del SELECT deben coincidir en orden y tipo con las columnas del INSERT.</div>
     </div>
 
-    <!-- ON DUPLICATE KEY -->
     <span class="section-anchor" id="duplicado"></span>
     <div class="section">
       <h2>ON DUPLICATE KEY UPDATE</h2>
       <p>¿Qué pasa si intentas insertar una fila con un id que ya existe? Normalmente MySQL lanza un error. Con <strong>ON DUPLICATE KEY UPDATE</strong> le dices: "si ya existe, actualiza estos campos en lugar de fallar".</p>
-
       <div class="code-block">
         <div class="code-header"><span class="code-label">Insertar o actualizar si ya existe</span></div>
         <div class="code-body"><span class="kw">INSERT INTO</span> productos (id, nombre, precio, stock)
@@ -336,11 +293,9 @@
   precio = <span class="kw">VALUES</span>(precio),
   stock  = <span class="kw">VALUES</span>(stock);</div>
       </div>
-
       <div class="info"><strong>¿Cuándo usarlo?</strong> Cuando no sabes si un registro ya existe y quieres "insertar o actualizar" en una sola operación. Este patrón se llama <em>upsert</em> y es muy común en sincronizaciones de datos.</div>
     </div>
 
-    <!-- ERRORES COMUNES -->
     <span class="section-anchor" id="errores"></span>
     <div class="section">
       <h2>Errores comunes y cómo evitarlos</h2>
@@ -414,12 +369,10 @@
 
     <hr>
 
-    <!-- RESUMEN -->
     <span class="section-anchor" id="resumen"></span>
     <div class="section">
       <h2>Resumen: INSERT completo</h2>
       <p>Un INSERT que combina todo lo visto en esta guía:</p>
-
       <div class="code-block">
         <div class="code-header"><span class="code-label">Insertar múltiples productos con todos los campos</span></div>
         <div class="code-body"><span class="cm">-- Insertar varios productos a la vez</span>
@@ -435,7 +388,6 @@
 <span class="cm">-- Verificar los datos insertados</span>
 <span class="kw">SELECT</span> * <span class="kw">FROM</span> productos <span class="kw">ORDER BY</span> id <span class="kw">DESC</span> <span class="kw">LIMIT</span> <span class="num">3</span>;</div>
       </div>
-
       <h3 style="margin-top:2rem">Lo que aprendiste</h3>
       <ul class="checklist">
         <li>INSERT INTO agrega nuevas filas a una tabla</li>
@@ -470,6 +422,5 @@
     });
   });
 </script>
-
 </body>
 </html>
