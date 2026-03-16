@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Introducción a SQL — Guía completa</title>
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;0,700;1,400&family=DM+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../style/style_introduccion.css">
+</head>
+<body>
+
+<nav>
+  <div class="nav-logo">mysql &gt; Introducción</div>
+</nav>
+
+<div class="page">
+  <aside>
+    <div class="aside-title">En esta guía</div>
+    <ul class="aside-links">
+      <li><a href="#intro">¿Qué es SQL?</a></li>
+      <li><a href="#base-datos">Base de datos</a></li>
+      <li><a href="#tabla">¿Qué es una tabla?</a></li>
+      <li><a href="#tipos-datos">Tipos de datos</a></li>
+      <li><a href="#create">CREATE TABLE</a></li>
+      <li><a href="#constraints">Restricciones</a></li>
+      <li><a href="#alter-add">Agregar columnas</a></li>
+      <li><a href="#alter-modify">Modificar columnas</a></li>
+      <li><a href="#alter-drop">Eliminar columnas</a></li>
+      <li><a href="#rename">Renombrar tabla</a></li>
+      <li><a href="#drop">DROP TABLE</a></li>
+      <li><a href="#resumen">Resumen</a></li>
+    </ul>
+  </aside>
+
+  <article>
+
+    <!-- HERO -->
+    <div class="hero">
+      <div class="hero-tag">MySQL · Nivel introductorio</div>
+      <h1>Introducción a <em>SQL</em><br>y bases de datos</h1>
+      <p class="hero-lead">Antes de consultar o modificar datos, necesitas saber dónde viven y cómo están organizados. Esta guía te explica qué es una base de datos, cómo se estructuran las tablas y cómo crearlas y modificarlas desde cero.</p>
+    </div>
+
+    <!-- ¿QUÉ ES SQL? -->
+    <span class="section-anchor" id="intro"></span>
+    <div class="section">
+      <h2>¿Qué es SQL?</h2>
+      <p>SQL (Structured Query Language) es el lenguaje estándar para comunicarse con bases de datos relacionales. Con SQL puedes crear estructuras, insertar datos, consultarlos, actualizarlos y eliminarlos.</p>
+
+      <div class="box box-amber">
+        <div class="box-icon">💬</div>
+        <div class="box-body">
+          <strong>Analogía del idioma</strong>
+          SQL es como aprender un idioma para hablar con una base de datos. Tú escribes instrucciones en SQL y la base de datos las entiende y responde. MySQL, PostgreSQL y SQLite son distintos "dialectos" del mismo idioma base.
+        </div>
+      </div>
+
+      <p>SQL se divide en tres grupos de comandos principales:</p>
+
+      <div class="concept-grid">
+        <div class="concept-card">
+          <div class="concept-icon">🏗️</div>
+          <div class="concept-name">DDL</div>
+          <div class="concept-desc">Data Definition Language. Crea y modifica estructuras: CREATE, ALTER, DROP.</div>
+        </div>
+        <div class="concept-card green">
+          <div class="concept-icon">✏️</div>
+          <div class="concept-name">DML</div>
+          <div class="concept-desc">Data Manipulation Language. Manipula datos: INSERT, UPDATE, DELETE, SELECT.</div>
+        </div>
+        <div class="concept-card amber">
+          <div class="concept-icon">🔐</div>
+          <div class="concept-name">DCL</div>
+          <div class="concept-desc">Data Control Language. Controla permisos: GRANT, REVOKE.</div>
+        </div>
+        <div class="concept-card teal">
+          <div class="concept-icon">💾</div>
+          <div class="concept-name">TCL</div>
+          <div class="concept-desc">Transaction Control Language. Maneja transacciones: COMMIT, ROLLBACK.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- BASE DE DATOS -->
+    <span class="section-anchor" id="base-datos"></span>
+    <div class="section">
+      <h2>¿Qué es una base de datos?</h2>
+      <p>Una base de datos es un sistema organizado para almacenar, gestionar y recuperar información de forma eficiente. En bases de datos relacionales, la información se guarda en tablas con filas y columnas.</p>
+
+      <div class="box box-amber">
+        <div class="box-icon">📁</div>
+        <div class="box-body">
+          <strong>Analogía del archivador</strong>
+          Una base de datos es como un archivador de oficina. Dentro hay carpetas (tablas), cada carpeta tiene hojas (filas), y cada hoja tiene campos llenados (columnas). Todo está organizado para encontrar cualquier documento rápidamente.
+        </div>
+      </div>
+
+      <div class="code-block">
+        <div class="code-header"><span class="code-label">Crear una base de datos y seleccionarla</span></div>
+        <div class="code-body"><span class="cm">-- Crear la base de datos</span>
+<span class="kw">CREATE DATABASE</span> tienda;
+
+<span class="cm">-- Seleccionarla para trabajar en ella</span>
+<span class="kw">USE</span> tienda;
+
+<span class="cm">-- Ver todas las bases de datos</span>
+<span class="kw">SHOW DATABASES</span>;</div>
+      </div>
+    </div>
+
+    <!-- QUÉ ES UNA TABLA -->
+    <span class="section-anchor" id="tabla"></span>
+    <div class="section">
+      <h2>¿Qué es una tabla?</h2>
+      <p>Una tabla es la unidad básica de almacenamiento en SQL. Se organiza en <strong>columnas</strong> (campos) y <strong>filas</strong> (registros). Cada columna tiene un nombre y un tipo de dato específico.</p>
+
+      <div class="box box-amber">
+        <div class="box-icon">📊</div>
+        <div class="box-body">
+          <strong>Analogía de la hoja de Excel</strong>
+          Una tabla es como una hoja de cálculo: la primera fila define los encabezados (columnas) y cada fila siguiente es un registro. La diferencia es que en SQL cada columna tiene un tipo de dato estricto — no podés mezclar texto con números en la misma columna.
+        </div>
+      </div>
+
+      <p>Ejemplo visual de la tabla <code style="font-family:var(--mono);font-size:0.83em;background:#f5f2ed;padding:2px 6px;border-radius:4px">empleados</code>:</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>id</th><th>nombre</th><th>ciudad</th><th>salario</th><th>activo</th></tr></thead>
+          <tbody>
+            <tr><td class="hi-b">1</td><td>Ana Torres</td><td>Quito</td><td>3410.00</td><td>1</td></tr>
+            <tr><td class="hi-b">2</td><td>Luis Mora</td><td>Guayaquil</td><td>1900.00</td><td>1</td></tr>
+            <tr><td class="hi-b">3</td><td>Carmen Ríos</td><td>Quito</td><td>3200.00</td><td>0</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Término</th><th>Significado</th><th>Ejemplo</th></tr></thead>
+          <tbody>
+            <tr><td><span class="tag">Tabla</span></td><td>Conjunto de datos relacionados</td><td>empleados, productos, pedidos</td></tr>
+            <tr><td><span class="tag-g">Columna</span></td><td>Atributo o campo de cada registro</td><td>nombre, salario, ciudad</td></tr>
+            <tr><td><span class="tag-a">Fila</span></td><td>Un registro completo</td><td>La información de Ana Torres</td></tr>
+            <tr><td><span class="tag-t">Celda</span></td><td>Un valor específico</td><td>3410.00 (salario de Ana)</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <hr>
+
+    <!-- TIPOS DE DATOS -->
+    <span class="section-anchor" id="tipos-datos"></span>
+    <div class="section">
+      <h2>Tipos de datos en MySQL</h2>
+      <p>Cada columna debe declarar qué tipo de dato acepta. Esto garantiza consistencia y eficiencia en el almacenamiento.</p>
+
+      <h3>Tipos numéricos</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Tipo</th><th>Descripción</th><th>Ejemplo</th></tr></thead>
+          <tbody>
+            <tr><td><span class="tag">INT</span></td><td>Número entero</td><td>1, 42, -10, 1000</td></tr>
+            <tr><td><span class="tag">DECIMAL(p,d)</span></td><td>Número con decimales exactos</td><td>19.99, 3410.50</td></tr>
+            <tr><td><span class="tag">FLOAT</span></td><td>Número con decimales aproximados</td><td>3.14, 2.718</td></tr>
+            <tr><td><span class="tag">TINYINT</span></td><td>Entero pequeño (0–255)</td><td>0 o 1 (como booleano)</td></tr>
+            <tr><td><span class="tag">BIGINT</span></td><td>Entero muy grande</td><td>9999999999</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3 style="margin-top:1.5rem">Tipos de texto</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Tipo</th><th>Descripción</th><th>Cuándo usar</th></tr></thead>
+          <tbody>
+            <tr><td><span class="tag">VARCHAR(n)</span></td><td>Texto variable hasta n caracteres</td><td>Nombres, emails, ciudades</td></tr>
+            <tr><td><span class="tag">CHAR(n)</span></td><td>Texto fijo de exactamente n caracteres</td><td>Códigos, siglas fijas</td></tr>
+            <tr><td><span class="tag">TEXT</span></td><td>Texto largo sin límite fijo</td><td>Descripciones, comentarios</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3 style="margin-top:1.5rem">Tipos de fecha y hora</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Tipo</th><th>Formato</th><th>Ejemplo</th></tr></thead>
+          <tbody>
+            <tr><td><span class="tag">DATE</span></td><td>AAAA-MM-DD</td><td>2024-03-15</td></tr>
+            <tr><td><span class="tag">DATETIME</span></td><td>AAAA-MM-DD HH:MM:SS</td><td>2024-03-15 10:30:00</td></tr>
+            <tr><td><span class="tag">TIMESTAMP</span></td><td>Igual que DATETIME</td><td>Se actualiza automáticamente</td></tr>
+            <tr><td><span class="tag">TIME</span></td><td>HH:MM:SS</td><td>10:30:00</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="box box-green">
+        <div class="box-icon">💡</div>
+        <div class="box-body">
+          <strong>Regla general para elegir tipos</strong>
+          Usa INT para identificadores, VARCHAR para textos cortos, DECIMAL para precios y valores monetarios, DATE para fechas, y TINYINT(1) como booleano (0 = falso, 1 = verdadero).
+        </div>
+      </div>
+    </div>
+
+    <!-- CREATE TABLE -->
+    <span class="section-anchor" id="create"></span>
+    <div class="section">
+      <h2>Crear una tabla — CREATE TABLE</h2>
+      <p>CREATE TABLE define la estructura de una nueva tabla: su nombre, columnas, tipos de datos y restricciones.</p>
+
+      <div class="anatomy">
+        <div class="anatomy-row">
+          <div class="anatomy-kw">CREATE TABLE</div>
+          <div class="anatomy-desc"><strong>Comando principal.</strong> Le dice a MySQL que vas a crear una nueva tabla.</div>
+        </div>
+        <div class="anatomy-row">
+          <div class="anatomy-kw">nombre_tabla</div>
+          <div class="anatomy-desc"><strong>El nombre de la tabla.</strong> Usa nombres descriptivos en minúsculas y sin espacios.</div>
+        </div>
+        <div class="anatomy-row">
+          <div class="anatomy-kw">( ... )</div>
+          <div class="anatomy-desc"><strong>Definición de columnas.</strong> Cada columna se define con: nombre tipo_de_dato restricciones.</div>
+        </div>
+        <div class="anatomy-row">
+          <div class="anatomy-kw">tipo_dato</div>
+          <div class="anatomy-desc"><strong>El tipo de la columna.</strong> INT, VARCHAR, DECIMAL, DATE, etc.</div>
+        </div>
+      </div>
+
+      <div class="code-block">
+        <div class="code-header"><span class="code-label">Crear tabla de empleados</span></div>
+        <div class="code-body"><span class="kw">CREATE TABLE</span> empleados (
+  id          <span class="tp">INT</span>           <span class="kw">AUTO_INCREMENT PRIMARY KEY</span>,
+  nombre      <span class="tp">VARCHAR</span>(<span class="num">100</span>)  <span class="kw">NOT NULL</span>,
+  ciudad      <span class="tp">VARCHAR</span>(<span class="num">80</span>),
+  departamento <span class="tp">VARCHAR</span>(<span class="num">60</span>),
+  salario     <span class="tp">DECIMAL</span>(<span class="num">10</span>,<span class="num">2</span>) <span class="kw">NOT NULL</span>,
+  activo      <span class="tp">TINYINT</span>      <span class="kw">DEFAULT</span> <span class="num">1</span>,
+  fecha_ingreso <span class="tp">DATE</span>
+);</div>
+      </div>
+
+      <div class="code-block">
+        <div class="code-header"><span class="code-label">Crear tabla de productos</span></div>
+        <div class="code-body"><span class="kw">CREATE TABLE</span> productos (
+  id          <span class="tp">INT</span>           <span class="kw">AUTO_INCREMENT PRIMARY KEY</span>,
+  nombre      <span class="tp">VARCHAR</span>(<span class="num">100</span>)  <span class="kw">NOT NULL</span>,
+  descripcion <span class="tp">TEXT</span>,
+  precio      <span class="tp">DECIMAL</span>(<span class="num">8</span>,<span class="num">2</span>)  <span class="kw">NOT NULL</span>,
+  stock       <span class="tp">INT</span>           <span class="kw">DEFAULT</span> <span class="num">0</span>,
+  categoria   <span class="tp">VARCHAR</span>(<span class="num">50</span>),
+  creado_en   <span class="tp">TIMESTAMP</span>     <span class="kw">DEFAULT CURRENT_TIMESTAMP</span>
+);</div>
+      </div>
+
+      <div class="code-block">
+        <div class="code-header"><span class="code-label">Ver las tablas existentes y la estructura</span></div>
+        <div class="code-body"><span class="cm">-- Ver todas las tablas de la base de datos</span>
+<span class="kw">SHOW TABLES</span>;
+
+<span class="cm">-- Ver la estructura de una tabla</span>
+<span class="kw">DESCRIBE</span> empleados;
+
+<span class="cm">-- O también:</span>
+<span class="kw">SHOW COLUMNS FROM</span> empleados;</div>
+      </div>
+    </div>
+
+    <!-- RESTRICCIONES -->
+    <span class="section-anchor" id="constraints"></span>
+    <div class="section">
+      <h2>Restricciones — CONSTRAINTS</h2>
+      <p>Las restricciones son reglas que se aplican a las columnas para garantizar la integridad de los datos. Se definen al crear la tabla o se agregan después.</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Restricción</th><th>Significado</th><th>Ejemplo</th></tr></thead>
+          <tbody>
+            <tr><td><span class="tag">PRIMARY KEY</span></td><td>Identifica cada fila de forma única</td><td>id INT PRIMARY KEY</td></tr>
+            <tr><td><span class="tag">AUTO_INCREMENT</span></td><td>Genera el valor automáticamente</td><td>id INT AUTO_INCREMENT</td></tr>
+            <tr><td><span class="tag">NOT NULL</span></td><td>El campo no puede estar vacío</td><td>nombre VARCHAR(100) NOT NULL</td></tr>
+            <tr><td><span class="tag">DEFAULT</span></td><td>Valor por defecto si no se especifica</td><td>activo TINYINT DEFAULT 1</td></tr>
+            <tr><td><span class="tag">UNIQUE</span></td><td>El valor debe ser único en la tabla</td><td>email VARCHAR(100) UNIQUE</td></tr>
+            <tr><td><span class="tag">FOREIGN KEY</span></td><td>Referencia a otra tabla</td><td>Ver más abajo</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="box box-amber">
+        <div class="box-icon">🔑</div>
+        <div class="box-body">
+          <strong>PRIMARY KEY + AUTO_INCREMENT</strong>
+          Siempre declara una columna <code style="font-family:var(--mono);font-size:0.85em">id</code> con <code style="font-family:var(--mono);font-size:0.85em">INT AUTO_INCREMENT PRIMARY KEY</code> en tus tablas. Esto le da a cada fila un identificador único que se asigna automáticamente.
+        </div>
+      </div>
+
+      <div class="code-block">
+        <div class="code-header"><span class="code-label">Tabla con FOREIGN KEY — clave foránea</span></div>
+        <div class="code-body"><span class="kw">CREATE TABLE</span> pedidos (
+  id          <span class="tp">INT</span>           <span class="kw">AUTO_INCREMENT PRIMARY KEY</span>,
+  empleado_id <span class="tp">INT</span>           <span class="kw">NOT NULL</span>,
+  producto    <span class="tp">VARCHAR</span>(<span class="num">100</span>),
+  monto       <span class="tp">DECIMAL</span>(<span class="num">8</span>,<span class="num">2</span>),
+  fecha       <span class="tp">DATE</span>,
+  <span class="kw">FOREIGN KEY</span> (empleado_id) <span class="kw">REFERENCES</span> empleados(id)
+);</div>
+      </div>
+    </div>
+
+    <hr>
+
+    <!-- ALTER TABLE ADD -->
+    <span class="section-anchor" id="alter-add"></span>
+    <div class="section">
+      <h2>Agregar columnas — ALTER TABLE ADD</h2>
+      <p>Después de crear una tabla, podés agregar nuevas columnas sin perder los datos existentes usando <strong>ALTER TABLE ... ADD</strong>.</p>
+
+      <div class="box box-amber">
+        <div class="box-icon">➕</div>
+        <div class="box-body">
+          <strong>Analogía del formulario ampliado</strong>
+          Es como agregar un campo nuevo a un formulario ya impreso. Los formularios anteriores quedarán con ese campo en blanco (NULL o con el DEFAULT), pero los nuevos ya lo tendrán disponible.
+        </div>
+      </div>
+
+      <div class="code-block">
+        <div class="code-header"><span class="code-label">Agregar columnas a tabla existente</span></div>
+        <div class="code-body"><span class="cm">-- Agregar una columna al final</span>
+<span class="kw">ALTER TABLE</span> empleados
+<span class="kw">ADD</span> email <span class="tp">VARCHAR</span>(<span class="num">150</span>);
+
+<span class="cm">-- Agregar con restricción NOT NULL y DEFAULT</span>
+<span class="kw">ALTER TABLE</span> empleados
+<span class="kw">ADD</span> telefono <span class="tp">VARCHAR</span>(<span class="num">20</span>) <span class="kw">DEFAULT</span> <span class="str">'Sin teléfono'</span>;
+
+<span class="cm">-- Agregar al inicio de la tabla</span>
+<span class="kw">ALTER TABLE</span> empleados
+<span class="kw">ADD</span> codigo <span class="tp">VARCHAR</span>(<span class="num">10</span>) <span class="kw">FIRST</span>;
+
+<span class="cm">-- Agregar después de una columna específica</span>
+<span class="kw">ALTER TABLE</span> empleados
+<span class="kw">ADD</span> apellido <span class="tp">VARCHAR</span>(<span class="num">100</span>) <span class="kw">AFTER</span> nombre;
+
+<span class="cm">-- Agregar varias columnas a la vez</span>
+<span class="kw">ALTER TABLE</span> productos
+<span class="kw">ADD</span> peso <span class="tp">DECIMAL</span>(<span class="num">6</span>,<span class="num">2</span>),
+<span class="kw">ADD</span> color <span class="tp">VARCHAR</span>(<span class="num">30</span>),
+<span class="kw">ADD</span> activo <span class="tp">TINYINT</span> <span class="kw">DEFAULT</span> <span class="num">1</span>;</div>
+      </div>
+
+      <div class="result-label">Estado de la tabla después de ADD →</div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>id</th><th>nombre</th><th>apellido (nuevo)</th><th>email (nuevo)</th><th>salario</th></tr></thead>
+          <tbody>
+            <tr><td>1</td><td>Ana Torres</td><td class="hi-g">NULL</td><td class="hi-g">NULL</td><td>3410.00</td></tr>
+            <tr><td>2</td><td>Luis Mora</td><td class="hi-g">NULL</td><td class="hi-g">NULL</td><td>1900.00</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ALTER TABLE MODIFY -->
+    <span class="section-anchor" id="alter-modify"></span>
+    <div class="section">
+      <h2>Modificar columnas — ALTER TABLE MODIFY</h2>
+      <p>Para cambiar el tipo de dato, el tamaño o las restricciones de una columna existente, usás <strong>ALTER TABLE ... MODIFY</strong>.</p>
+
+      <div class="code-block">
+        <div class="code-header"><span class="code-label">Modificar columnas existentes</span></div>
+        <div class="code-body"><span class="cm">-- Cambiar el tipo o tamaño</span>
+<span class="kw">ALTER TABLE</span> empleados
+<span class="kw">MODIFY</span> nombre <span class="tp">VARCHAR</span>(<span class="num">200</span>) <span class="kw">NOT NULL</span>;
+
+<span class="cm">-- Cambiar a NOT NULL y agregar DEFAULT</span>
+<span class="kw">ALTER TABLE</span> empleados
+<span class="kw">MODIFY</span> ciudad <span class="tp">VARCHAR</span>(<span class="num">80</span>) <span class="kw">NOT NULL DEFAULT</span> <span class="str">'Sin ciudad'</span>;
+
+<span class="cm">-- Cambiar tipo de columna</span>
+<span class="kw">ALTER TABLE</span> productos
+<span class="kw">MODIFY</span> precio <span class="tp">DECIMAL</span>(<span class="num">12</span>,<span class="num">2</span>) <span class="kw">NOT NULL</span>;
+
+<span class="cm">-- Renombrar columna y cambiar tipo (CHANGE)</span>
+<span class="kw">ALTER TABLE</span> empleados
+<span class="kw">CHANGE</span> telefono celular <span class="tp">VARCHAR</span>(<span class="num">15</span>);</div>
+      </div>
+
+      <div class="compare">
+        <div class="compare-box">
+          <div class="compare-header bad">MODIFY — cambia tipo/restricción</div>
+          <div class="code-body"><span class="kw">ALTER TABLE</span> empleados
+<span class="kw">MODIFY</span> nombre
+  <span class="tp">VARCHAR</span>(<span class="num">200</span>) <span class="kw">NOT NULL</span>;
+<span class="cm">-- Cambia tamaño
+-- Mantiene el nombre</span></div>
+        </div>
+        <div class="compare-box">
+          <div class="compare-header good">CHANGE — renombra y cambia tipo</div>
+          <div class="code-body"><span class="kw">ALTER TABLE</span> empleados
+<span class="kw">CHANGE</span> telefono
+  celular <span class="tp">VARCHAR</span>(<span class="num">15</span>);
+<span class="cm">-- Renombra la columna
+-- Y cambia el tipo</span></div>
+        </div>
+      </div>
+
+      <div class="box box-red">
+        <div class="box-icon">⚠️</div>
+        <div class="box-body">
+          <strong>Cuidado al cambiar tipos de datos</strong>
+          Si cambias una columna de VARCHAR a INT y hay datos de texto, MySQL puede perder información. Siempre verificá los datos existentes antes de modificar el tipo de una columna en producción.
+        </div>
+      </div>
+    </div>
+
+    <!-- ALTER TABLE DROP -->
+    <span class="section-anchor" id="alter-drop"></span>
+    <div class="section">
+      <h2>Eliminar columnas — ALTER TABLE DROP</h2>
+      <p>Para eliminar una columna de una tabla existente usás <strong>ALTER TABLE ... DROP COLUMN</strong>. Esta acción borra la columna y todos sus datos de forma permanente.</p>
+
+      <div class="code-block">
+        <div class="code-header"><span class="code-label">Eliminar columnas</span></div>
+        <div class="code-body"><span class="cm">-- Eliminar una columna</span>
+<span class="kw">ALTER TABLE</span> empleados
+<span class="kw">DROP COLUMN</span> codigo;
+
+<span class="cm">-- Eliminar varias columnas a la vez</span>
+<span class="kw">ALTER TABLE</span> empleados
+<span class="kw">DROP COLUMN</span> peso,
+<span class="kw">DROP COLUMN</span> color;</div>
+      </div>
+
+      <div class="box box-red">
+        <div class="box-icon">🗑️</div>
+        <div class="box-body">
+          <strong>DROP COLUMN es permanente</strong>
+          Al eliminar una columna, todos sus datos se pierden inmediatamente. No hay deshacer. Hacé siempre un backup antes de ejecutar DROP COLUMN en producción.
+        </div>
+      </div>
+    </div>
+
+    <!-- RENAME TABLE -->
+    <span class="section-anchor" id="rename"></span>
+    <div class="section">
+      <h2>Renombrar tabla — RENAME TABLE</h2>
+      <p>Podés cambiar el nombre de una tabla existente sin perder ningún dato usando <strong>RENAME TABLE</strong> o <strong>ALTER TABLE ... RENAME TO</strong>.</p>
+
+      <div class="code-block">
+        <div class="code-header"><span class="code-label">Renombrar tablas</span></div>
+        <div class="code-body"><span class="cm">-- Forma 1: RENAME TABLE</span>
+<span class="kw">RENAME TABLE</span> empleados <span class="kw">TO</span> staff;
+
+<span class="cm">-- Forma 2: ALTER TABLE</span>
+<span class="kw">ALTER TABLE</span> productos <span class="kw">RENAME TO</span> catalogo;
+
+<span class="cm">-- Renombrar varias tablas a la vez</span>
+<span class="kw">RENAME TABLE</span>
+  pedidos <span class="kw">TO</span> ordenes,
+  clientes <span class="kw">TO</span> customers;</div>
+      </div>
+    </div>
+
+    <!-- DROP TABLE -->
+    <span class="section-anchor" id="drop"></span>
+    <div class="section">
+      <h2>Eliminar tabla — DROP TABLE</h2>
+      <p>DROP TABLE elimina completamente una tabla con todos sus datos y estructura. Es irreversible.</p>
+
+      <div class="code-block">
+        <div class="code-header"><span class="code-label">Eliminar tablas</span></div>
+        <div class="code-body"><span class="cm">-- Eliminar una tabla</span>
+<span class="kw">DROP TABLE</span> empleados;
+
+<span class="cm">-- Eliminar solo si existe (sin error)</span>
+<span class="kw">DROP TABLE IF EXISTS</span> empleados;
+
+<span class="cm">-- Eliminar varias tablas</span>
+<span class="kw">DROP TABLE</span> tabla1, tabla2, tabla3;
+
+<span class="cm">-- Vaciar la tabla sin borrar la estructura</span>
+<span class="kw">TRUNCATE TABLE</span> empleados;</div>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Comando</th><th>¿Borra estructura?</th><th>¿Borra datos?</th><th>¿Recuperable?</th></tr></thead>
+          <tbody>
+            <tr><td><span class="tag">DROP TABLE</span></td><td>✓ Sí</td><td>✓ Sí</td><td>❌ No</td></tr>
+            <tr><td><span class="tag-a">TRUNCATE</span></td><td>❌ No</td><td>✓ Sí</td><td>❌ No</td></tr>
+            <tr><td><span class="tag-g">DELETE</span></td><td>❌ No</td><td>✓ Sí (parcial)</td><td>✓ Con ROLLBACK</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <hr>
+
+    <!-- RESUMEN -->
+    <span class="section-anchor" id="resumen"></span>
+    <div class="section">
+      <h2>Resumen: introducción completa</h2>
+
+      <div class="code-block">
+        <div class="code-header"><span class="code-label">Flujo completo desde cero</span></div>
+        <div class="code-body"><span class="cm">-- 1. Crear la base de datos</span>
+<span class="kw">CREATE DATABASE</span> mi_empresa;
+<span class="kw">USE</span> mi_empresa;
+
+<span class="cm">-- 2. Crear la tabla</span>
+<span class="kw">CREATE TABLE</span> empleados (
+  id        <span class="tp">INT</span>          <span class="kw">AUTO_INCREMENT PRIMARY KEY</span>,
+  nombre    <span class="tp">VARCHAR</span>(<span class="num">100</span>) <span class="kw">NOT NULL</span>,
+  email     <span class="tp">VARCHAR</span>(<span class="num">150</span>) <span class="kw">UNIQUE</span>,
+  salario   <span class="tp">DECIMAL</span>(<span class="num">10</span>,<span class="num">2</span>) <span class="kw">NOT NULL</span>,
+  activo    <span class="tp">TINYINT</span>      <span class="kw">DEFAULT</span> <span class="num">1</span>,
+  creado_en <span class="tp">TIMESTAMP</span>    <span class="kw">DEFAULT CURRENT_TIMESTAMP</span>
+);
+
+<span class="cm">-- 3. Agregar columna olvidada</span>
+<span class="kw">ALTER TABLE</span> empleados
+<span class="kw">ADD</span> departamento <span class="tp">VARCHAR</span>(<span class="num">60</span>) <span class="kw">AFTER</span> nombre;
+
+<span class="cm">-- 4. Modificar el tamaño de una columna</span>
+<span class="kw">ALTER TABLE</span> empleados
+<span class="kw">MODIFY</span> email <span class="tp">VARCHAR</span>(<span class="num">200</span>) <span class="kw">UNIQUE</span>;
+
+<span class="cm">-- 5. Ver la estructura final</span>
+<span class="kw">DESCRIBE</span> empleados;</div>
+      </div>
+
+      <h3 style="margin-top:1.75rem">Lo que aprendiste</h3>
+      <ul class="checklist">
+        <li>SQL es el lenguaje estándar para bases de datos relacionales</li>
+        <li>Una base de datos contiene tablas; una tabla contiene filas y columnas</li>
+        <li>Cada columna tiene un tipo de dato: INT, VARCHAR, DECIMAL, DATE, etc.</li>
+        <li>CREATE TABLE crea una tabla nueva con su estructura y restricciones</li>
+        <li>PRIMARY KEY + AUTO_INCREMENT identifica cada fila de forma única</li>
+        <li>NOT NULL impide que un campo quede vacío; DEFAULT asigna un valor automático</li>
+        <li>ALTER TABLE ADD agrega nuevas columnas sin perder datos existentes</li>
+        <li>ALTER TABLE MODIFY cambia el tipo o restricciones de una columna</li>
+        <li>ALTER TABLE CHANGE renombra una columna y cambia su tipo al mismo tiempo</li>
+        <li>ALTER TABLE DROP COLUMN elimina una columna de forma permanente</li>
+        <li>RENAME TABLE cambia el nombre de una tabla sin afectar sus datos</li>
+        <li>DROP TABLE elimina la tabla completa; TRUNCATE solo vacía sus datos</li>
+      </ul>
+    </div>
+
+  </article>
+</div>
+
+<footer>
+  <div>Guía de MySQL · <strong>Introducción a SQL</strong></div>
+  <div>Desarrollado por <strong>Darwin Chamba</strong> · Desarrollador Fullstack</div>
+</footer>
+
+<script>
+  const links   = document.querySelectorAll('.aside-links a');
+  const anchors = document.querySelectorAll('.section-anchor');
+  window.addEventListener('scroll', () => {
+    let current = '';
+    anchors.forEach(a => {
+      if (window.scrollY >= a.offsetTop - 70) current = a.id;
+    });
+    links.forEach(a => a.classList.toggle('active', a.getAttribute('href') === '#' + current));
+  }, { passive: true });
+</script>
+</body>
+</html>
