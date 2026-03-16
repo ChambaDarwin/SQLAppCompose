@@ -35,40 +35,32 @@
 
   <article>
 
-    <!-- HERO -->
     <div class="hero">
       <div class="hero-tag">MySQL · Nivel básico</div>
       <h1>Dominando el <em>SELECT</em><br>en MySQL</h1>
       <p class="hero-lead">Todo en SQL empieza con una pregunta. SELECT es la forma de hacerle preguntas a tu base de datos y obtener exactamente lo que necesitas.</p>
     </div>
 
-    <!-- INTRO -->
     <span class="section-anchor" id="intro"></span>
     <div class="section">
       <h2>¿Qué es SELECT?</h2>
       <p>SELECT es el comando que usas para <strong>leer o consultar datos</strong> de una base de datos. No modifica nada, solo recupera información. Es el comando más usado en SQL y el punto de partida para entender todo lo demás.</p>
-
       <div class="analogy">
         <div class="analogy-icon">📋</div>
         <div class="analogy-text">
           <strong>Analogía del mesero:</strong> Imagina que la base de datos es un restaurante con muchas mesas llenas de platos. SELECT es como pedirle al mesero: <em>"Tráeme todos los platos que tengan pollo y que estén en la mesa 3, ordenados por precio."</em> El mesero va, busca, y te trae exactamente lo que pediste. La cocina (los datos) no cambia en absoluto.
         </div>
       </div>
-
       <p>En términos simples: SELECT le dice a MySQL <em>qué quieres ver</em>, de <em>qué tabla</em>, con <em>qué condiciones</em>.</p>
     </div>
 
-    <!-- TABLA EJEMPLO -->
     <span class="section-anchor" id="tabla"></span>
     <div class="section">
       <h2>La tabla que usaremos</h2>
       <p>A lo largo de esta guía usaremos una tabla llamada <code style="font-family:var(--mono);font-size:0.85em;background:#f5f2ed;padding:2px 6px;border-radius:4px">empleados</code> con estos datos:</p>
-
       <div class="table-wrap">
         <table>
-          <thead>
-            <tr><th>id</th><th>nombre</th><th>ciudad</th><th>departamento</th><th>salario</th><th>activo</th></tr>
-          </thead>
+          <thead><tr><th>id</th><th>nombre</th><th>ciudad</th><th>departamento</th><th>salario</th><th>activo</th></tr></thead>
           <tbody>
             <tr><td>1</td><td>Ana Torres</td><td>Quito</td><td>Ingeniería</td><td>2800</td><td>1</td></tr>
             <tr><td>2</td><td>Luis Mora</td><td>Guayaquil</td><td>Ventas</td><td>1900</td><td>1</td></tr>
@@ -81,12 +73,10 @@
       </div>
     </div>
 
-    <!-- SINTAXIS BÁSICA -->
     <span class="section-anchor" id="sintaxis"></span>
     <div class="section">
       <h2>Sintaxis básica</h2>
       <p>La estructura mínima de un SELECT es muy simple. Solo necesitas decirle <em>qué columnas</em> y <em>de qué tabla</em>:</p>
-
       <div class="anatomy">
         <div class="anatomy-row">
           <div class="anatomy-kw">SELECT</div>
@@ -109,12 +99,10 @@
           <div class="anatomy-desc"><strong>¿Cuántos resultados?</strong> (opcional) Limita la cantidad de filas devueltas.</div>
         </div>
       </div>
-
       <div class="code-block">
         <div class="code-header"><span class="code-label">Traer todos los empleados</span></div>
         <div class="code-body"><span class="kw">SELECT</span> * <span class="kw">FROM</span> empleados;</div>
       </div>
-
       <div class="result-label">Resultado →</div>
       <div class="table-wrap">
         <table>
@@ -129,29 +117,24 @@
           </tbody>
         </table>
       </div>
-
       <div class="tip"><strong>El asterisco *</strong> significa "todas las columnas". Es útil para explorar una tabla, pero en proyectos reales es mejor especificar solo las columnas que necesitas.</div>
     </div>
 
-    <!-- ELEGIR COLUMNAS -->
     <span class="section-anchor" id="columnas"></span>
     <div class="section">
       <h2>Elegir columnas específicas</h2>
       <p>En vez de traer todo, puedes pedir solo las columnas que te interesan. Es más eficiente y más claro.</p>
-
       <div class="analogy">
         <div class="analogy-icon">📰</div>
         <div class="analogy-text">
           <strong>Analogía del periódico:</strong> Cuando lees el periódico, no lees todo: solo abres la sección de deportes. SELECT con columnas específicas es lo mismo: vas directo a lo que te importa, ignoras el resto.
         </div>
       </div>
-
       <div class="code-block">
         <div class="code-header"><span class="code-label">Solo nombre y salario</span></div>
         <div class="code-body"><span class="kw">SELECT</span> nombre, salario
 <span class="kw">FROM</span> empleados;</div>
       </div>
-
       <div class="result-label">Resultado →</div>
       <div class="table-wrap">
         <table>
@@ -170,26 +153,22 @@
 
     <hr>
 
-    <!-- WHERE -->
     <span class="section-anchor" id="where"></span>
     <div class="section">
       <h2>Filtrar con WHERE</h2>
       <p>WHERE es el filtro. Le dices a MySQL: "solo devuélveme las filas que cumplen esta condición". Sin WHERE, obtienes todo; con WHERE, obtienes exactamente lo que buscas.</p>
-
       <div class="analogy">
         <div class="analogy-icon">🔍</div>
         <div class="analogy-text">
           <strong>Analogía del buscador:</strong> WHERE es como escribir algo en Google. Sin escribir nada, te muestra millones de páginas. Cuando escribes "empleados en Quito", Google filtra y te muestra solo lo relevante. WHERE hace lo mismo con tus filas.
         </div>
       </div>
-
       <div class="code-block">
         <div class="code-header"><span class="code-label">Empleados de Quito</span></div>
         <div class="code-body"><span class="kw">SELECT</span> nombre, ciudad, salario
 <span class="kw">FROM</span> empleados
 <span class="kw">WHERE</span> ciudad = <span class="str">'Quito'</span>;</div>
       </div>
-
       <div class="result-label">Resultado →</div>
       <div class="table-wrap">
         <table>
@@ -201,17 +180,14 @@
           </tbody>
         </table>
       </div>
-
       <h3>Combinar condiciones con AND y OR</h3>
       <p>Puedes combinar varias condiciones. <strong>AND</strong> exige que se cumplan ambas. <strong>OR</strong> acepta que se cumpla al menos una.</p>
-
       <div class="code-block">
         <div class="code-header"><span class="code-label">Ingenieros en Quito</span></div>
         <div class="code-body"><span class="kw">SELECT</span> nombre, departamento, ciudad
 <span class="kw">FROM</span> empleados
 <span class="kw">WHERE</span> ciudad = <span class="str">'Quito'</span> <span class="kw">AND</span> departamento = <span class="str">'Ingeniería'</span>;</div>
       </div>
-
       <div class="result-label">Resultado →</div>
       <div class="table-wrap">
         <table>
@@ -222,7 +198,6 @@
           </tbody>
         </table>
       </div>
-
       <div class="code-block">
         <div class="code-header"><span class="code-label">Quito O Cuenca</span></div>
         <div class="code-body"><span class="kw">SELECT</span> nombre, ciudad
@@ -231,12 +206,10 @@
       </div>
     </div>
 
-    <!-- OPERADORES -->
     <span class="section-anchor" id="operadores"></span>
     <div class="section">
       <h2>Operadores de comparación</h2>
       <p>WHERE puede usar varios tipos de comparaciones para filtrar datos numéricos, de texto o rangos.</p>
-
       <div class="table-wrap">
         <table>
           <thead><tr><th>Operador</th><th>Significado</th><th>Ejemplo</th></tr></thead>
@@ -253,14 +226,12 @@
           </tbody>
         </table>
       </div>
-
       <div class="code-block">
         <div class="code-header"><span class="code-label">Salario entre 1800 y 2500</span></div>
         <div class="code-body"><span class="kw">SELECT</span> nombre, salario
 <span class="kw">FROM</span> empleados
 <span class="kw">WHERE</span> salario <span class="kw">BETWEEN</span> <span class="num">1800</span> <span class="kw">AND</span> <span class="num">2500</span>;</div>
       </div>
-
       <div class="result-label">Resultado →</div>
       <div class="table-wrap">
         <table>
@@ -271,14 +242,12 @@
           </tbody>
         </table>
       </div>
-
       <div class="code-block">
         <div class="code-header"><span class="code-label">Ciudades específicas con IN</span></div>
         <div class="code-body"><span class="kw">SELECT</span> nombre, ciudad
 <span class="kw">FROM</span> empleados
 <span class="kw">WHERE</span> ciudad <span class="kw">IN</span> (<span class="str">'Guayaquil'</span>, <span class="str">'Cuenca'</span>);</div>
       </div>
-
       <div class="analogy">
         <div class="analogy-icon">🛒</div>
         <div class="analogy-text">
@@ -287,19 +256,16 @@
       </div>
     </div>
 
-    <!-- LIKE -->
     <span class="section-anchor" id="like"></span>
     <div class="section">
       <h2>Buscar texto con LIKE</h2>
       <p>LIKE sirve para buscar texto parcial. Usa <strong>%</strong> como comodín que representa cualquier cantidad de caracteres.</p>
-
       <div class="analogy">
         <div class="analogy-icon">🔎</div>
         <div class="analogy-text">
           <strong>Analogía del buscador de contactos:</strong> Cuando en tu celular buscas "Mar" en los contactos, aparece "María", "Marco", "Mariana". LIKE hace lo mismo: <code style="font-family:var(--mono)">LIKE 'Mar%'</code> encuentra todo lo que empieza con "Mar".
         </div>
       </div>
-
       <div class="table-wrap">
         <table>
           <thead><tr><th>Patrón</th><th>Encuentra</th></tr></thead>
@@ -310,14 +276,12 @@
           </tbody>
         </table>
       </div>
-
       <div class="code-block">
         <div class="code-header"><span class="code-label">Nombres que contienen "or"</span></div>
         <div class="code-body"><span class="kw">SELECT</span> nombre
 <span class="kw">FROM</span> empleados
 <span class="kw">WHERE</span> nombre <span class="kw">LIKE</span> <span class="str">'%or%'</span>;</div>
       </div>
-
       <div class="result-label">Resultado →</div>
       <div class="table-wrap">
         <table>
@@ -332,26 +296,22 @@
 
     <hr>
 
-    <!-- ORDER BY -->
     <span class="section-anchor" id="orden"></span>
     <div class="section">
       <h2>Ordenar con ORDER BY</h2>
       <p>ORDER BY ordena los resultados. <strong>ASC</strong> (ascendente, de menor a mayor) es el valor por defecto. <strong>DESC</strong> invierte el orden.</p>
-
       <div class="analogy">
         <div class="analogy-icon">📊</div>
         <div class="analogy-text">
           <strong>Analogía de la lista de canciones:</strong> Imagina que tienes una lista de reproducción. Puedes ordenar las canciones por duración, de la más corta a la más larga (ASC) o al revés (DESC). ORDER BY hace lo mismo con tus datos.
         </div>
       </div>
-
       <div class="code-block">
         <div class="code-header"><span class="code-label">Empleados ordenados por salario (mayor a menor)</span></div>
         <div class="code-body"><span class="kw">SELECT</span> nombre, salario
 <span class="kw">FROM</span> empleados
 <span class="kw">ORDER BY</span> salario <span class="kw">DESC</span>;</div>
       </div>
-
       <div class="result-label">Resultado →</div>
       <div class="table-wrap">
         <table>
@@ -366,9 +326,7 @@
           </tbody>
         </table>
       </div>
-
       <p>Puedes ordenar por varias columnas. La segunda columna desempata cuando hay valores iguales:</p>
-
       <div class="code-block">
         <div class="code-header"><span class="code-label">Ordenar por departamento y luego por nombre</span></div>
         <div class="code-body"><span class="kw">SELECT</span> nombre, departamento
@@ -377,12 +335,10 @@
       </div>
     </div>
 
-    <!-- LIMIT -->
     <span class="section-anchor" id="limit"></span>
     <div class="section">
       <h2>Limitar resultados con LIMIT</h2>
       <p>LIMIT restringe cuántas filas devuelve la consulta. Es muy útil cuando solo necesitas los primeros N resultados o para paginar datos.</p>
-
       <div class="code-block">
         <div class="code-header"><span class="code-label">Los 3 empleados con mayor salario</span></div>
         <div class="code-body"><span class="kw">SELECT</span> nombre, salario
@@ -390,7 +346,6 @@
 <span class="kw">ORDER BY</span> salario <span class="kw">DESC</span>
 <span class="kw">LIMIT</span> <span class="num">3</span>;</div>
       </div>
-
       <div class="result-label">Resultado →</div>
       <div class="table-wrap">
         <table>
@@ -402,16 +357,13 @@
           </tbody>
         </table>
       </div>
-
       <div class="tip"><strong>LIMIT con OFFSET:</strong> Puedes combinar LIMIT con OFFSET para paginar. <code style="font-family:var(--mono);font-size:0.85em">LIMIT 3 OFFSET 3</code> salta los primeros 3 y trae los siguientes 3.</div>
     </div>
 
-    <!-- ALIAS -->
     <span class="section-anchor" id="alias"></span>
     <div class="section">
       <h2>Renombrar con AS</h2>
       <p>AS crea un alias, es decir, un nombre temporal para una columna en el resultado. Hace los resultados más legibles.</p>
-
       <div class="code-block">
         <div class="code-header"><span class="code-label">Columnas con alias descriptivos</span></div>
         <div class="code-body"><span class="kw">SELECT</span>
@@ -420,7 +372,6 @@
   ciudad <span class="kw">AS</span> <span class="str">'Ubicación'</span>
 <span class="kw">FROM</span> empleados;</div>
       </div>
-
       <div class="result-label">Resultado →</div>
       <div class="table-wrap">
         <table>
@@ -434,25 +385,21 @@
       </div>
     </div>
 
-    <!-- DISTINCT -->
     <span class="section-anchor" id="distinct"></span>
     <div class="section">
       <h2>Valores únicos con DISTINCT</h2>
       <p>DISTINCT elimina los duplicados del resultado. Si hay varias filas con el mismo valor, solo aparece una.</p>
-
       <div class="analogy">
         <div class="analogy-icon">🎯</div>
         <div class="analogy-text">
           <strong>Analogía del casillero:</strong> Imagina una pila de formularios donde cada persona puso su ciudad. Muchos repiten "Quito". DISTINCT es como revisar la pila y quedarte solo con una copia de cada ciudad, sin repetidos.
         </div>
       </div>
-
       <div class="code-block">
         <div class="code-header"><span class="code-label">¿Qué ciudades existen en la tabla?</span></div>
         <div class="code-body"><span class="kw">SELECT DISTINCT</span> ciudad
 <span class="kw">FROM</span> empleados;</div>
       </div>
-
       <div class="result-label">Resultado → (sin "Quito" repetido)</div>
       <div class="table-wrap">
         <table>
@@ -468,12 +415,10 @@
 
     <hr>
 
-    <!-- RESUMEN -->
     <span class="section-anchor" id="resumen"></span>
     <div class="section">
       <h2>Resumen: SELECT completo</h2>
       <p>Aquí una consulta que combina todo lo que aprendiste:</p>
-
       <div class="code-block">
         <div class="code-header"><span class="code-label">Consulta completa con todos los elementos</span></div>
         <div class="code-body"><span class="cm">-- Empleados activos de Ingeniería en Quito,</span>
@@ -489,7 +434,6 @@
 <span class="kw">ORDER BY</span> salario <span class="kw">DESC</span>
 <span class="kw">LIMIT</span> <span class="num">2</span>;</div>
       </div>
-
       <div class="result-label">Resultado →</div>
       <div class="table-wrap">
         <table>
@@ -500,18 +444,16 @@
           </tbody>
         </table>
       </div>
-
       <h3 style="margin-top:2rem">Lo que aprendiste</h3>
       <ul class="checklist">
         <li>SELECT * trae todas las columnas, SELECT col1, col2 solo las que quieres</li>
-        <li>WHERE filtra filas con condiciones usando =, >, <, BETWEEN, IN, LIKE</li>
+        <li>WHERE filtra filas con condiciones usando =, >, &lt;, BETWEEN, IN, LIKE</li>
         <li>AND y OR combinan múltiples condiciones</li>
         <li>ORDER BY ASC/DESC ordena los resultados</li>
         <li>LIMIT restringe cuántas filas se devuelven</li>
         <li>AS renombra columnas para hacer los resultados más legibles</li>
         <li>DISTINCT elimina valores duplicados</li>
       </ul>
-
       <div class="warning" style="margin-top:1.5rem">
         <strong>Recuerda:</strong> SELECT nunca modifica tus datos. Solo los lee. Es completamente seguro experimentar con SELECT sin miedo a romper nada en tu base de datos.
       </div>
